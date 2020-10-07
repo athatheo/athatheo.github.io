@@ -80,7 +80,7 @@ function loadData(e, lines) {
 
             maxKey = Math.max(maxKey, key);
             maxValue = Math.max(maxValue, value);
-
+            console.log("hiiiii"+maxKey);
             // Add key to hash
             if (undefined == keyHash["" + key]) {
                 keyHash["" + key] = 1;

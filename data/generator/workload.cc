@@ -66,7 +66,7 @@ void generateKeysUniform(bool write_to_file, bool print) {
         values.push_back(val);
         if(write_to_file)
         {
-            fprintf (fp_bulk, "%d %d\n", (int)key, (int)val);
+            fprintf (fp_bulk, "%lld %lld\n", key, val);
         }
     }
     //ssort(keys.begin(), keys.end());
@@ -259,7 +259,8 @@ int main(int argc, char* argv[])
         no_of_puts = atol(argv[4]); 
         if(strcmp(argv[1], "0") == 0)
         {
-            max_U = atol(argv[5]); 
+            max_U = atoll(argv[5]);
+            min_U = -max_U;
         }
         else
         {
