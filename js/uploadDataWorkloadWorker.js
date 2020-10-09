@@ -48,7 +48,6 @@ function loadData(e, lines) {
     
     // Parse through data file
     for(var i = 0; i < lines.length; i++){
-        console.log("hi");
         var line = lines[i].trim();;
 
         if(line != "" && line.indexOf("//") != 0) {
@@ -110,7 +109,6 @@ function loadData(e, lines) {
             frequencyKeys.push({key: Number(property), frequency: keyHash[property]});
         }
         frequencyKeys.sort(function(a,b){return a.key - b.key;});
-        
         // Calculate U, U1, U1, and pput
         uParameters = highestFrequencyPartitions(frequencyKeys);
         uParameters['U'] = maxKey * 100;
@@ -138,12 +136,12 @@ function loadData(e, lines) {
 function highestFrequencyPartitions(entries) {
     var min = entries[0].key;
     var max = entries[entries.length - 1].key;
-    var PARTITION_RANGE = 1000;
+    var PARTITION_RANGE = 100000000;
     var numPartitions = Math.round((max - min)/PARTITION_RANGE);
     var partitions = [];
     var entriesIndex = 0;
     var thresholdValue = 1.5;
-
+    console.log(numPartitions);
     // Partition:
     //  start point
     //  end point
@@ -155,7 +153,6 @@ function highestFrequencyPartitions(entries) {
     const END_POINT = 1;
     const NUMBER_KEYS = 2;
     const TOTAL_FREQUENCY = 3;
-    console.log(numPartitions);
     for(var i = 0; i < numPartitions - 1; i++) {
         partitions[i] = [0, 0, 0, 0];
         var startPoint = i * PARTITION_RANGE + min;
@@ -165,7 +162,7 @@ function highestFrequencyPartitions(entries) {
         while(entriesIndex < entries.length && startPoint <= entries[entriesIndex].key && entries[entriesIndex].key  < endPoint) {
             numberKeys++;
             totalFrequency += entries[entriesIndex].frequency;
-            entriesIndex++; 
+            entriesIndex++;
         }
         partitions[i][START_POINT] = startPoint;
         partitions[i][END_POINT] = endPoint;
