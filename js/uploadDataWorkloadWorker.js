@@ -159,7 +159,6 @@ function highestFrequencyPartitions(entries) {
         if (i%10000==0) {
             console.log(i);
         }
-        console.log("hey there");
         partitions[i] = [0, 0, 0, 0];
         var startPoint = i * PARTITION_RANGE + min;
         var endPoint = (i + 1) * PARTITION_RANGE + min;
