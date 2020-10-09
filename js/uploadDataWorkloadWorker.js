@@ -48,6 +48,7 @@ function loadData(e, lines) {
     
     // Parse through data file
     for(var i = 0; i < lines.length; i++){
+        console.log("hi");
         var line = lines[i].trim();;
 
         if(line != "" && line.indexOf("//") != 0) {
@@ -80,7 +81,6 @@ function loadData(e, lines) {
 
             maxKey = Math.max(maxKey, key);
             maxValue = Math.max(maxValue, value);
-            console.log("hiiiii"+maxKey);
             // Add key to hash
             if (undefined == keyHash["" + key]) {
                 keyHash["" + key] = 1;
@@ -156,6 +156,7 @@ function highestFrequencyPartitions(entries) {
     const NUMBER_KEYS = 2;
     const TOTAL_FREQUENCY = 3;
     for(var i = 0; i < numPartitions - 1; i++) {
+        console.log("hey there");
         partitions[i] = [0, 0, 0, 0];
         var startPoint = i * PARTITION_RANGE + min;
         var endPoint = (i + 1) * PARTITION_RANGE + min;
@@ -309,7 +310,7 @@ function loadWorkload(e, lines) {
                 isValid = false;
                 break;
             }
-        }  
+        }
 
         // Calculate and update loading percentage
         var per = Math.ceil((i+1) / lines.length * 1000) / 10;
