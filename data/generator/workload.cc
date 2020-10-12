@@ -52,7 +52,7 @@ void generateKeysUniform(bool write_to_file, bool print) {
     std::random_device rd;  //Will be used to obtain a seed for the random number engine
     std::mt19937_64 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     uniform_int_distribution<unsigned long long> uni_dist1(min_U, max_U);
-    uniform_int_distribution<unsigned long long> uni_dist2(1, 10000);
+    uniform_int_distribution<unsigned long long> uni_dist2(1, max_U);
     keys.reserve(N);
     values.reserve(N);
     //char str[MAX_LENGTH];

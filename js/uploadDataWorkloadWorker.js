@@ -136,12 +136,11 @@ function loadData(e, lines) {
 function highestFrequencyPartitions(entries) {
     var min = entries[0].key;
     var max = entries[entries.length - 1].key;
-    var PARTITION_RANGE = 100000000;
+    var PARTITION_RANGE = 10000000;
     var numPartitions = Math.round((max - min)/PARTITION_RANGE);
     var partitions = [];
     var entriesIndex = 0;
     var thresholdValue = 1.5;
-    console.log(numPartitions);
     // Partition:
     //  start point
     //  end point
