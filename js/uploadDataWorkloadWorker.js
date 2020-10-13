@@ -110,8 +110,11 @@ function loadData(e, lines) {
         }
         frequencyKeys.sort(function(a,b){return a.key - b.key;});
         // Calculate U, U1, U1, and pput
-        uParameters = highestFrequencyPartitions(frequencyKeys);
-        uParameters['U'] = maxKey * 100;
+        if (!uniform) {
+            uParameters = highestFrequencyPartitions(frequencyKeys);
+        } else {
+            uParameters['U'] = maxKey * 100;
+        }
 
         var totalKeys = 0;
         for (var key of frequencyKeys) {
@@ -136,7 +139,7 @@ function loadData(e, lines) {
 function highestFrequencyPartitions(entries) {
     var min = entries[0].key;
     var max = entries[entries.length - 1].key;
-    var PARTITION_RANGE = 10000000;
+    var PARTITION_RANGE = 1000;
     var numPartitions = Math.round((max - min)/PARTITION_RANGE);
     var partitions = [];
     var entriesIndex = 0;
