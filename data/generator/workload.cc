@@ -48,6 +48,9 @@ std::set<unsigned long long>* special_keys_set = new std::set<unsigned long long
 std::set<unsigned long long>* normal_keys_set = new std::set<unsigned long long>;
 std::default_random_engine unif_generator(20);
 std::default_random_engine bern_generator(10);
+
+char static_value[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+
 void generateKeysUniform(bool write_to_file, bool print) {
     std::random_device rd;  //Will be used to obtain a seed for the random number engine
     std::mt19937_64 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
@@ -66,7 +69,7 @@ void generateKeysUniform(bool write_to_file, bool print) {
         values.push_back(val);
         if(write_to_file)
         {
-            fprintf (fp_bulk, "%lld %lld\n", key, val);
+            fprintf (fp_bulk, "%lld %s\n", key, static_value);
         }
     }
     //ssort(keys.begin(), keys.end());
