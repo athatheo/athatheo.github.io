@@ -114,15 +114,16 @@ function loadData(e, lines, uniform) {
         // Calculate U, U1, U1, and pput
         if (!uniform) {
             uParameters = highestFrequencyPartitions(frequencyKeys);
+            var totalKeys = 0;
+            for (var key of frequencyKeys) {
+                totalKeys += key.frequency;
+            }
+            uParameters['p_put'] = Math.round(uParameters['specialKeys']/totalKeys*100)/100;
         } else {
             uParameters['U'] = maxKey * 100;
         }
 
-        var totalKeys = 0;
-        for (var key of frequencyKeys) {
-            totalKeys += key.frequency;
-        }
-        uParameters['p_put'] = Math.round(uParameters['specialKeys']/totalKeys*100)/100;
+
 
         KeyHash = keyHash;
         U_Parameters = uParameters;
