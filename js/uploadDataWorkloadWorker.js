@@ -18,9 +18,10 @@ onmessage = function(e) {
  */
 function loadDataFile(e){
     var reader = new FileReader();
+    var uniform = e.data.uniform;
     reader.onload = function(evt) {
         var lines = evt.target.result.split('\n');
-        loadData(e, lines);
+        loadData(e, lines, uniform);
     };
     reader.readAsText(e.data.selectedFile);
 }
@@ -30,10 +31,10 @@ function loadDataFile(e){
  * @param {*} e 
  * @param {*} lines 
  */
-function loadData(e, lines) {
+function loadData(e, lines, uniform) {
     var entries = 0;
     var maxKey = -2147483648;
-    var maxValue = -2147483648;
+    var maxValue = "";
 
     var isValid = true;
     var keySize = "";
@@ -45,7 +46,6 @@ function loadData(e, lines) {
     var uParameters;
 
     var percentage = 0;
-    
     // Parse through data file
     for(var i = 0; i < lines.length; i++){
         var line = lines[i].trim();;
@@ -61,7 +61,7 @@ function loadData(e, lines) {
             var entry = line.split(" ");
 
             // Check if entry is correct format
-            if(!(entry.length == 2 && !entry.some(isNaN)) &&
+            if(!(entry.length == 2 && !isNaN(entry[0])) &&
                !(entry.length == 3 && !(isNaN(entry[1]))  && !(isNaN(entry[2])))) {
                 entries = "";
                 isValid = false;
@@ -72,14 +72,16 @@ function loadData(e, lines) {
 
             if(entry.length == 2) {
                 key = Number(entry[0]);
-                value = Number(entry[1]);
+                value = entry[1];
             } else {
                 key = Number(entry[1]);
-                value = Number(entry[2]);
+                value = entry[2];
             }
 
             maxKey = Math.max(maxKey, key);
-            maxValue = Math.max(maxValue, value);
+            if (maxValue.length < value.length) {
+                maxValue = value;
+            }
             // Add key to hash
             if (undefined == keyHash["" + key]) {
                 keyHash["" + key] = 1;
@@ -101,7 +103,7 @@ function loadData(e, lines) {
 
     if(isValid) {
         keySize = Math.ceil(Math.log2(maxKey)/8);
-        valueSize = Math.ceil(Math.log2(maxValue)/8);
+        valueSize = 100000; //maxValue.length;
         entrySize = keySize + valueSize;
         
         // Turn hash into array
@@ -139,7 +141,11 @@ function loadData(e, lines) {
 function highestFrequencyPartitions(entries) {
     var min = entries[0].key;
     var max = entries[entries.length - 1].key;
-    var PARTITION_RANGE = 1000;
+    var i = 1;
+    while ((max - min)%i != (max - min)) {
+        i = i*10;
+    }
+    var PARTITION_RANGE = i/1000000;
     var numPartitions = Math.round((max - min)/PARTITION_RANGE);
     var partitions = [];
     var entriesIndex = 0;

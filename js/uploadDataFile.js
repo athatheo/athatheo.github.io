@@ -17,10 +17,18 @@ function uploadDataFile(event) {
 
     // Show indicator
     document.getElementById("loading_indicator_1").style.opacity = 1;
-    
+
+    // Get uniform/skew
+    let uniform;
+    if (document.getElementById('data_radio_1').checked) {
+        uniform = true;
+    } else {
+        uniform = false;
+    }
+
     // Call worker
     uploadDataWorkloadWorker.addEventListener('message', onUploadDataFileWorkerMessage);
-    uploadDataWorkloadWorker.postMessage({from: "data", selectedFile: selectedFile});
+    uploadDataWorkloadWorker.postMessage({from: "data", selectedFile: selectedFile, uniform: uniform});
 }
 
 /**

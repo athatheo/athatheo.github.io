@@ -49,7 +49,7 @@ std::set<unsigned long long>* normal_keys_set = new std::set<unsigned long long>
 std::default_random_engine unif_generator(20);
 std::default_random_engine bern_generator(10);
 
-char static_value[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+char static_value[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa";
 
 void generateKeysUniform(bool write_to_file, bool print) {
     std::random_device rd;  //Will be used to obtain a seed for the random number engine
