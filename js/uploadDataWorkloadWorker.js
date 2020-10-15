@@ -43,7 +43,7 @@ function loadData(e, lines, uniform) {
 
     var keyHash = new Object();
     var frequencyKeys = [];
-    var uParameters;
+    var uParameters = {};
 
     var percentage = 0;
     // Parse through data file
