@@ -9,7 +9,7 @@ function uploadDataFile(event) {
     clearData();
 
     // Get selected file
-    const selectedFile = event.srcElement.files[0];
+    const selectedFile = event.target.files[0];
     document.getElementById("data-input-file-name").innerHTML = "loading... " + selectedFile.name;
     
     document.getElementById("data-input-file-invalid").innerHTML = "";
