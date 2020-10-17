@@ -17,25 +17,50 @@ onmessage = function (e) {
  * @param {*} e
  */
 function loadDataFile(e, callback) {
+
     var file = e.data.selectedFile;
     var fileSize = file.size;
-    var chunkSize = 10000000; // bytes
+    var chunkSize = fileSize/100; // bytes
     var offset = 0;
     var self = this; // we need a reference to the current object
     var chunkReaderBlock = null;
-    var last_line = "";
+   // var last_line = "";
     var uniform = e.data.uniform;
+    var metadata = {maxKey: -2147483648, maxValue: "", keyHash: new Object(), frequencyKeys: [], uParameters: {}}
+    var iteration = 0;
+    var percentage = 0;
+    var visit = false;
+    var total_lines = 0;
     var readEventHandler = function (evt) {
         if (evt.target.error == null) {
             var lines = evt.target.result.split('\n');
-            if (last_line != "") {
-                lines.unshift(last_line+lines[0]);
-                delete lines[1];
+ //           if (last_line != "") {
+   //             lines.unshift(last_line+lines[0]);
+     //           lines.splice(1,1);
+       //     }
+            if (visit) {
+                metadata = loadData(e, lines.slice(1,lines.length-1), uniform, metadata);
             }
-            loadData(e, lines.slice(0,lines.length-2), uniform);
-            last_line = lines[lines.length-1];
+       //     last_line = lines[lines.length-1];
             total_lines = total_lines + lines.length;
-            offset += evt.target.result.length;
+            // Calculate and update loading percentage
+
+            var per = Math.ceil((iteration + 1) / (fileSize/chunkSize) * 1000) / 10;
+            per = Math.max(0.1, per);
+            per = Math.min(99.7, per);
+
+            if (per != percentage) {
+                percentage = per;
+                postMessage({to: "data", msg: "percentage", percentage: percentage});
+            }
+            iteration ++;
+
+            offset += chunkSize;
+            if (Math.ceil(Math.random()*10) == 5) {
+                visit = true;
+            } else {
+                visit = false;
+            }
             callback(evt.target.result); // callback for handling read chunk
         } else {
             console.log("Read error: " + evt.target.error);
@@ -44,6 +69,16 @@ function loadDataFile(e, callback) {
         if (offset >= fileSize) {
             console.log("lines="+total_lines);
             console.log("Done reading file");
+            // Update the inputs
+            postMessage({
+                to: "data",
+                msg: "inputs",
+                entries: total_lines,
+                entrySize: Math.ceil(Math.log2(metadata['maxKey']) / 8)+metadata['maxValue'].length,
+                keySize: Math.ceil(Math.log2(metadata['maxKey']) / 8),
+                fileName: e.data.selectedFile.name,
+                uParameters: metadata['uParameters']
+            });
             return;
         }
 
@@ -60,42 +95,6 @@ function loadDataFile(e, callback) {
 
     // now let's start the read with the first block
     chunkReaderBlock(offset, chunkSize, file);
-    /*    var file = e.data.selectedFile;
-        var uniform = e.data.uniform;
-        var offset = 0;
-        var size, partial;
-        while (offset < file.size) {
-            size = 10000000;
-            var start = offset;
-            var stop = offset + size;
-            partial = file.slice(start, stop);
-
-            var last_line = "";
-
-            var reader = new FileReader();
-            reader.size = size;
-            reader.offset = offset;
-            reader.onload = function(evt) {
-                var lines = evt.target.result.split('\n');
-                if (last_line != "") {
-                    lines.unshift(last_line);
-                }
-                loadData(e, lines.slice(0,lines.length-2), uniform);
-                last_line = lines[lines.length-1];
-                total_lines = total_lines + lines.length;
-            };
-            reader.readAsText(partial);
-
-            offset = offset + size;
-        }
-        console.log("lines="+total_lines);
-    /*    var reader = new FileReader();
-        var uniform = e.data.uniform;
-        reader.onload = function(evt) {
-            var lines = evt.target.result.split('\n');
-            loadData(e, lines, uniform);
-        };
-        reader.readAsText(e.data.selectedFile);*/
 }
 
 /**
@@ -103,31 +102,24 @@ function loadDataFile(e, callback) {
  * @param {*} e
  * @param {*} lines
  */
-function loadData(e, lines, uniform) {
-    var entries = 0;
-    var maxKey = -2147483648;
-    var maxValue = "";
+function loadData(e, lines, uniform, metadata) {
+    var maxKey = metadata['maxKey'];
+    var maxValue = metadata['maxValue'];
 
     var isValid = true;
-    var keySize = "";
-    var valueSize = "";
-    var entrySize = "";
 
-    var keyHash = new Object();
-    var frequencyKeys = [];
-    var uParameters = {};
+    var keyHash = metadata['keyHash'];
+    var frequencyKeys = metadata['frequencyKeys'];
+    var uParameters = metadata['uParameters'];
 
-    var percentage = 0;
     // Parse through data file
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i].trim();
-        ;
 
         if (line != "" && line.indexOf("//") != 0) {
 
             if (line.indexOf("//") > 0) {
                 line = line.split("//")[0].trim();
-                ;
             }
 
             var entry = line.split(" ");
@@ -136,7 +128,6 @@ function loadData(e, lines, uniform) {
             if (!(entry.length == 2 && !isNaN(entry[0])) &&
                 !(entry.length == 3 && !(isNaN(entry[1])) && !(isNaN(entry[2])))) {
                 entries = "";
-                console.log(entry.length + " " + entry[0] + " " + entry[1]);
                 isValid = false;
                 break;
             }
@@ -162,22 +153,9 @@ function loadData(e, lines, uniform) {
                 keyHash["" + key] += 1;
             }
         }
-
-        // Calculate and update loading percentage
-        var per = Math.ceil((i + 1) / lines.length * 1000) / 10;
-        per = Math.max(0.1, per);
-        per = Math.min(99.7, per);
-
-        if (per != percentage) {
-            percentage = per;
-            postMessage({to: "data", msg: "percentage", percentage: percentage});
-        }
     }
 
     if (isValid) {
-        keySize = Math.ceil(Math.log2(maxKey) / 8);
-        valueSize = maxValue.length;
-        entrySize = keySize + valueSize;
 
         // Turn hash into array
         for (const property in keyHash) {
@@ -205,16 +183,15 @@ function loadData(e, lines, uniform) {
         postMessage({to: "data", msg: "invalid"});
     }
 
-    // Update the inputs
-    postMessage({
-        to: "data",
-        msg: "inputs",
-        entries: entries,
-        entrySize: entrySize,
-        keySize: keySize,
-        fileName: e.data.selectedFile.name,
-        uParameters: uParameters
-    });
+
+    metadata['maxKey'] = maxKey;
+    metadata['maxValue'] = maxValue;
+
+    metadata['keyHash'] = keyHash;
+    metadata['frequencyKeys'] = frequencyKeys;
+    metadata['uParameters'] = uParameters;
+
+    return metadata;
 }
 
 /**
