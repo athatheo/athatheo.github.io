@@ -44,7 +44,7 @@ function clearData() {
 }
 
 /**
- * Recive data from worker and display data or error
+ * Receive data from worker and display data or error
  * @param {*} e 
  */
 function onUploadDataFileWorkerMessage(e) {

@@ -454,8 +454,18 @@
                         </div>
 
                         <div class="input-group">
-                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Writes (inserts, updates, and deletes) in the Workload</span> Writes % </span>
-                            <input id="w" type="text" class="form-control" aria-label="Proportion of writes operation" placeholder=" w (e.g., 1)"  style="text-align:right" onchange="re_run(event, 'input4')" onwheel="re_run(event, 'workload_input')" />
+                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Inserts in the Workload</span> Inserts % </span>
+                            <input id="insert_workload" type="text" class="form-control" aria-label="Proportion of inserts operation" placeholder=" w (e.g., 1)"  style="text-align:right" onchange="re_run(event, 'input4')" onwheel="re_run(event, 'workload_input')" />
+                        </div>
+
+                        <div class="input-group">
+                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Blind Updates in the Workload</span> Blind Update % </span>
+                            <input id="blind_update_workload" type="text" class="form-control" aria-label="Proportion of Blind Updates operation" placeholder=" w (e.g., 1)"  style="text-align:right" onchange="re_run(event, 'input4')" onwheel="re_run(event, 'workload_input')" />
+                        </div>
+
+                        <div class="input-group">
+                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Read Modify Updates in the Workload</span> Read Modify Update % </span>
+                            <input id="read_modify_update_workload" type="text" class="form-control" aria-label="Proportion of Read Modify Updates operation" placeholder=" w (e.g., 1)"  style="text-align:right" onchange="re_run(event, 'input4')" onwheel="re_run(event, 'workload_input')" />
                         </div>
 
                         <div class="input-group" style="display: none">
