@@ -78,7 +78,9 @@ function Variables()
     var Z;
     var L;
 
-    var w;
+    var insert;
+    var blind_update;
+    var read_modify_update;
     var r;
     var v;
     var qL;
@@ -145,7 +147,6 @@ function SLA_factor() {
 
 function parseInputVariables()
 {
-
     return Object.assign({},input);
 }
 
@@ -240,7 +241,9 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
-    var w = Variables.w;
+    var insert = Variables.insert;
+    var blind_update = Variables.blind_update;
+    var read_modify_update = Variables.read_modify_update;
     var r = Variables.r;
     var v = Variables.v;
     var qL = Variables.qL;
@@ -412,10 +415,10 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
                         //logTotalCostSortByUpdateCost(d_list, T, K, 0, L, Y, M, M_B, M_F, M_F_HI, M_F_LO, update_cost, read_cost, "");
                     }
                     //logTotalCost(T, K, Z, L, Y, M/(1024*1024*1024), M_B/(1024*1024*1024), M_F/(1024*1024*1024), M_F_HI/(1024*1024*1024), M_F_LO/(1024*1024*1024), M_FP/(1024*1024*1024), M_BF/(1024*1024*1024), FPR_sum, update_cost, read_cost, short_scan_cost, long_scan_cost);
-                    var total_cost = (w * update_cost + v * read_cost + r * no_result_read_cost) / (v + w + r);
+                    var total_cost = (insert * update_cost + v * read_cost + r * no_result_read_cost) / (v + insert + r);
 
                     if(using_compression){
-                        total_cost = (w * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + w + r);
+                        total_cost = (insert * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + insert + r);
                     }
 
                     var total_latency= total_cost * query_count/ mem_sum / IOPS / 60 / 60 / 24;
@@ -574,10 +577,10 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
                 //logTotalCostSortByUpdateCost(d_list, T, K, 0, L, Y, M, M_B, M_F, M_F_HI, M_F_LO, update_cost, read_cost, "");
             }
             //logTotalCost(T, K, Z, L, Y, M/(1024*1024*1024), M_B/(1024*1024*1024), M_F/(1024*1024*1024), M_F_HI/(1024*1024*1024), M_F_LO/(1024*1024*1024), M_FP/(1024*1024*1024), M_BF/(1024*1024*1024), FPR_sum, update_cost, read_cost, short_scan_cost, long_scan_cost);
-            var total_cost = (w * update_cost + v * read_cost + r * no_result_read_cost) / (v + w + r);
+            var total_cost = (insert * update_cost + v * read_cost + r * no_result_read_cost) / (v + insert + r);
 
             if(using_compression){
-                total_cost = (w * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + w + r);
+                total_cost = (insert * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + insert + r);
             }
 
             var total_latency= total_cost * query_count/ mem_sum / IOPS / 60 / 60 / 24;
@@ -719,10 +722,10 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
                 //logTotalCostSortByUpdateCost(d_list, T, K, 0, L, Y, M, M_B, M_F, M_F_HI, M_F_LO, update_cost, read_cost, "");
             }
             //logTotalCost(T, K, Z, L, Y, M/(1024*1024*1024), M_B/(1024*1024*1024), M_F/(1024*1024*1024), M_F_HI/(1024*1024*1024), M_F_LO/(1024*1024*1024), M_FP/(1024*1024*1024), M_BF/(1024*1024*1024), FPR_sum, update_cost, read_cost, short_scan_cost, long_scan_cost);
-            var total_cost = (w * update_cost + v * read_cost + r * no_result_read_cost) / (v + w + r);
+            var total_cost = (insert * update_cost + v * read_cost + r * no_result_read_cost) / (v + insert + r);
 
             if(using_compression){
-                total_cost = (w * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + w + r);
+                total_cost = (insert * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + insert + r);
             }
 
             var total_latency= total_cost * query_count/ mem_sum / IOPS / 60 / 60 / 24;
@@ -808,7 +811,9 @@ function countContinuumForExistingDesign(combination, cloud_provider, existing_s
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
-    var w = Variables.w;
+    var insert = Variables.insert;
+    var blind_update = Variables.blind_update;
+    var read_modify_update = Variables.read_modify_update;
     var r = Variables.r;
     var v = Variables.v;
     var qL = Variables.qL;
@@ -1072,10 +1077,10 @@ function countContinuumForExistingDesign(combination, cloud_provider, existing_s
         //logTotalCost(T, K, Z, L, Y, M/(1024*1024*1024), M_B/(1024*1024*1024), M_F/(1024*1024*1024), M_F_HI/(1024*1024*1024), M_F_LO/(1024*1024*1024), M_FP/(1024*1024*1024), M_BF/(1024*1024*1024), FPR_sum, update_cost, read_cost, short_scan_cost, long_scan_cost);
         //logTotalCostSortByUpdateCost(d_list, T, K, 0, L, Y, M, M_B, M_F, M_F_HI, M_F_LO, update_cost, read_cost, "");
     }
-    var total_cost = (w * update_cost + v * read_cost + r * no_result_read_cost) / (v + w + r);
+    var total_cost = ( insert * update_cost + v * read_cost + r * no_result_read_cost) / (v + insert + r);
 
     if(using_compression){
-        total_cost = (w * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + w + r);
+        total_cost = (insert * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + insert + r);
     }
 
     var total_latency= total_cost * query_count/ mem_sum / IOPS / 60 / 60 / 24;

@@ -89,7 +89,9 @@ function Variables()
     var Z;
     var L;
 
-    var w;
+    var insert;
+    var blind_update;
+    var read_modify_update;
     var r;
     var v;
     var qL;
@@ -153,7 +155,6 @@ function SLA_factor() {
 
 function parseInputVariables()
 {
-
     var parsedBoxes = new Variables();
 
     //Dataset and Environment
@@ -165,7 +166,9 @@ function parseInputVariables()
 
     //Workload
     parsedBoxes.s = parseInt(document.getElementById("s").value.replace(/\D/g,''), 10);
-    parsedBoxes.w = parseFloat(document.getElementById("w").value);
+    parsedBoxes.insert = parseFloat(document.getElementById("insert_workload").value);
+    parsedBoxes.blind_update = parseFloat(document.getElementById("blind_update_workload").value);
+    parsedBoxes.read_modify_update = parseFloat(document.getElementById("read_modify_update_workload").value);
     parsedBoxes.r = parseFloat(document.getElementById("r").value);
     parsedBoxes.v = parseFloat(document.getElementById("v").value);
     parsedBoxes.qL = parseFloat(document.getElementById("qL").value);
@@ -249,7 +252,9 @@ function navigateDesignSpace() {
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
-    var w = Variables.w;
+    var insert = Variables.insert;
+    var blind_update = Variables.blind_update;
+    var read_modify_update = Variables.read_modify_update;
     var r = Variables.r;
     var v = Variables.v;
     var qL = Variables.qL;
@@ -515,7 +520,10 @@ function countThroughput(cost, cloud_provider) {
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
-    var w = Variables.w;
+    var insert = Variables.insert;
+    var blind_update = Variables.blind_update;
+    var read_modify_update = Variables.read_modify_update;
+    console.log(insert);
     var r = Variables.r;
     var v = Variables.v;
     var qL = Variables.qL;
@@ -676,7 +684,9 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
-    var w = Variables.w;
+    var insert = Variables.insert;
+    var blind_update = Variables.blind_update;
+    var read_modify_update = Variables.read_modify_update;
     var r = Variables.r;
     var v = Variables.v;
     var qL = Variables.qL;
@@ -900,7 +910,9 @@ function countContinuumForExistingDesign(combination, cloud_provider, existing_s
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
-    var w = Variables.w;
+    var insert = Variables.insert;
+    var blind_update = Variables.blind_update;
+    var read_modify_update = Variables.read_modify_update;
     var r = Variables.r;
     var v = Variables.v;
     var qL = Variables.qL;

@@ -1,4 +1,10 @@
 /data/generator/bulkwrite.txt
 /data/generator/workload.txt
-../../.idea/workspace.xml
+/.idea/workspace.xml
 /local_run/
+/_site
+/data/generator/_site
+/data/generator/.jekyll-cache
+/.jekyll-cache
+/data/dataSampleFile.txt
+/data/generator/workload
