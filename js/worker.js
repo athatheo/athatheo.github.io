@@ -638,7 +638,7 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
     //return  max_RAM_purchased;
     //console.log(Variables.latency);
 
-    for (var T = 2; T <= 32; T=T++) {
+    for (var T = 2; T <= 32; T++) {
         for (var M_B_percent = 0.2; M_B_percent <= 1; M_B_percent += 0.2) {
             var K=1;
             var Z=1
