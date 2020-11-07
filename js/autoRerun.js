@@ -146,16 +146,6 @@ function init(){
     $('#myForm_1 input').on('change', function() {
         if($('input[name=radio_1]:checked', '#myForm_1').val()=="skew")
             $("#myForm_2").animate({height: '168px',opacity:'1',margin:'7px 6px 6px 6px',padding:'5px',borderWidth:'0px'}, "slow");
-        else{
-            $("#myForm_2").animate({height: '0px',opacity:'0',margin:'0px',padding:'0px',borderWidth:'0px'}, "slow");
-            workload_type = 0;
-            U_1 = 10000;
-            U_2=100000000000;
-            p_get = 0.7;
-            p_put=0.0001;
-            //navigateDesignSpace();
-            drawContinuumsMultithread();
-        }
     });
 
     $('#myForm_2 input').on('change', function() {

@@ -334,15 +334,15 @@
                     <div id="dataset-setting" class="collapse multi-collapse">
                             <div class="input-group" >
                                 <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Total data items to store</span># Entries</span>
-                                <input id="N" type="text" class="form-control" aria-label="Index Size N (elements)" placeholder="Number of Entries in the Index (e.g., 10485760)" style="text-align:right" onchange="re_run(event, 'dataset_input')" autocomplete="false"/>
+                                <input id="N" type="text" class="form-control" aria-label="Index Size N (elements)" placeholder="Number of Entries in the Index (e.g., 10485760)" style="text-align:right" autocomplete="false"/>
                             </div>
                             <div class="input-group">
                                 <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Key-Value pair size in bytes (e.g., 16).</span>Entry size (bytes) </span>
-                                <input id="E" type="number" class="form-control" aria-label="Key-Value pair size (bytes)" placeholder="Key-Value pair size in bytes (e.g., 16)" style="text-align:right" onchange="re_run(event, 'dataset_input')" onwheel="re_run(event, 'dataset_input')"  autocomplete="false"/>
+                                <input id="E" type="number" class="form-control" aria-label="Key-Value pair size (bytes)" placeholder="Key-Value pair size in bytes (e.g., 16)" style="text-align:right" autocomplete="false"/>
                             </div>
                             <div class="input-group">
                                 <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Key size in bytes (e.g., 8).</span>Key size (bytes) </span>
-                                <input id="F" type="text" class="form-control" aria-label="Key size (bytes)" placeholder="Key size in bytes (e.g., 8)" style="text-align:right" onchange="re_run(event, 'dataset_input')" autocomplete="false"/>
+                                <input id="F" type="text" class="form-control" aria-label="Key size (bytes)" placeholder="Key size in bytes (e.g., 8)" style="text-align:right" autocomplete="false"/>
                             </div>
                             <!-- Message -->
                             <div class="guide_text_inputs" >
@@ -415,37 +415,37 @@
 
                         <div class="input-group">
                             <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">No. of operations in the workload</span>Number of queries</span>
-                            <input id="query_count" type="text" class="form-control" aria-label="No. of operations in the workload" placeholder=" qL (e.g., 1)"  style="text-align:right" onchange="re_run(event, 'workload_input')" onwheel="re_run(event, 'workload_input')" />
+                            <input id="query_count" type="text" class="form-control" aria-label="No. of operations in the workload" placeholder=" qL (e.g., 1)"  style="text-align:right"/>
                         </div>
 
                         <div class="input-group">
                             <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Existing Point Lookup Operation</span>Point Lookups %</span>
-                            <input id="v" type="text" class="form-control" aria-label="Proportion of existing point lookup operation" placeholder=" v (e.g., 1)"  style="text-align:right" onchange="re_run(event, 'workload_input')" onwheel="re_run(event, 'workload_input')" />
+                            <input id="v" type="text" class="form-control" aria-label="Proportion of existing point lookup operation" placeholder=" v (e.g., 1)"  style="text-align:right" />
                         </div>
 
                         <div class="input-group" >
                             <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Non-result Point Lookup Operation</span>Zero result Point Lookups %</span>
-                            <input id="r" type="text" class="form-control" aria-label="Proportion of non-result point lookup operation" placeholder=" r (e.g., 1)"  style="text-align:right" onchange="re_run(event, 'workload_input')" onwheel="re_run(event, 'workload_input')" />
+                            <input id="r" type="text" class="form-control" aria-label="Proportion of non-result point lookup operation" placeholder=" r (e.g., 1)"  style="text-align:right" />
                         </div>
 
                         <div class="input-group">
                             <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Writes (inserts, updates, and deletes) in the Workload</span> Writes % </span>
-                            <input id="w" type="text" class="form-control" aria-label="Proportion of writes operation" placeholder=" w (e.g., 1)"  style="text-align:right" onchange="re_run(event, 'input4')" onwheel="re_run(event, 'workload_input')" />
+                            <input id="w" type="text" class="form-control" aria-label="Proportion of writes operation" placeholder=" w (e.g., 1)"  style="text-align:right"/>
                         </div>
 
                         <div class="input-group" style="display: none">
                             <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Short Range Lookup Operation</span>Short Range Lookup %</span>
-                            <input id="qS" type="text" class="form-control" aria-label="Proportion of short range lookup operation" placeholder=" qS (e.g., 1)"  style="text-align:right" onchange="re_run(event, 'workload_input')" onwheel="re_run(event, 'workload_input')" />
+                            <input id="qS" type="text" class="form-control" aria-label="Proportion of short range lookup operation" placeholder=" qS (e.g., 1)"  style="text-align:right"/>
                         </div>
 
                         <div class="input-group" style="display: none">
                             <span class="input-group-addon"><span data-tooltip="Proportion of Long Range Lookup Operation" data-tooltip-position="bottom"> Long Range Lookup % </span></span>
-                            <input id="qL" type="text" class="form-control" aria-label="Proportion of long range lookup operation" placeholder=" qL (e.g., 1)"  style="text-align:right" onchange="re_run(event, 'workload_input')" onwheel="re_run(event, 'workload_input')" />
+                            <input id="qL" type="text" class="form-control" aria-label="Proportion of long range lookup operation" placeholder=" qL (e.g., 1)"  style="text-align:right"/>
                         </div>
 
                         <div class="input-group" style="display: none">
                             <span class="input-group-addon"><span data-tooltip="The number of unique entries in the target key range" data-tooltip-position="bottom"> Target Range Size </span></span>
-                            <input id="s" type="number" class="form-control" aria-label="Proportion" placeholder=" s (e.g., 2048)"  style="text-align:right;" onchange="re_run(event, 'input4')" onwheel="re_run(event, 'workload_input')"/>
+                            <input id="s" type="number" class="form-control" aria-label="Proportion" placeholder=" s (e.g., 2048)"  style="text-align:right;"/>
                         </div>
                         <!-- Message -->
                         <div class="guide_text_inputs" >
@@ -496,7 +496,7 @@
                               <div class="row">
                                       <div class="input-group" style="text-align: center;">
                                           <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">The total amount of money you are willing to spend on the cloud to run this workload.</span>Budget </span>
-                                          <input id="cost" type="number" class="form-control" aria-label="Cost" placeholder="Cost" style="text-align:right " onchange="re_run(event, 'input4')"  onwheel="re_run(event, 'input7')" autocomplete="false"/>
+                                          <input id="cost" type="number" class="form-control" aria-label="Cost" placeholder="Cost" style="text-align:right " autocomplete="false"/>
                                       </div>
                               </div>
 
