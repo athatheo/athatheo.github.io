@@ -1012,7 +1012,7 @@ function countContinuumForExistingDesign(combination, cloud_provider, existing_s
     var short_scan_cost;
     var long_scan_cost;
 
-    if (write_percentage != 0) {
+    if (write_percentage != 0 || blind_update != 0 || read_modify_update != 0) {
         if(scenario=='A'){
             if(Z == 0) // LSH-table append-only
             {
@@ -1049,7 +1049,7 @@ function countContinuumForExistingDesign(combination, cloud_provider, existing_s
     if(existing_system=="FASTER"||existing_system=="FASTER_H") {
         Z = T - 1;
     }
-    if (read_percentage != 0) {
+    if (read_percentage != 0 || blind_update != 0 || read_modify_update != 0) {
         if (scenario == 'A') // Avg-case
         {
             if(Z == 0) // LSH-table append-only
@@ -1089,6 +1089,17 @@ function countContinuumForExistingDesign(combination, cloud_provider, existing_s
         }
 
     }
+
+    if(existing_system == "rocks") {
+        rmu_cost = read_cost + update_cost
+    } else {
+        rmu_cost = read_cost + 1.0/B;
+    }
+    if(existing_system=="rocks") {
+        blind_update_cost = update_cost;
+    } else {
+        blind_update_cost = read_cost + 1.0/B;
+    }
     if (short_scan_percentage != 0) {
         short_scan_cost = analyzeShortScanCost(B, T, K, Z, L, Y, M, M_B, M_F, M_BF);
     }
@@ -1102,7 +1113,7 @@ function countContinuumForExistingDesign(combination, cloud_provider, existing_s
         //logTotalCost(T, K, Z, L, Y, M/(1024*1024*1024), M_B/(1024*1024*1024), M_F/(1024*1024*1024), M_F_HI/(1024*1024*1024), M_F_LO/(1024*1024*1024), M_FP/(1024*1024*1024), M_BF/(1024*1024*1024), FPR_sum, update_cost, read_cost, short_scan_cost, long_scan_cost);
         //logTotalCostSortByUpdateCost(d_list, T, K, 0, L, Y, M, M_B, M_F, M_F_HI, M_F_LO, update_cost, read_cost, "");
     }
-    var total_cost = ( insert * update_cost + v * read_cost + r * no_result_read_cost) / (v + insert + r);
+    var total_cost = ( insert * update_cost + blind_update * blind_update_cost + read_modify_update * rmu_cost+ v * read_cost + r * no_result_read_cost) / (read_modify_update + blind_update + v + insert + r);
 
     if(using_compression){
         total_cost = (insert * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + insert + r);
