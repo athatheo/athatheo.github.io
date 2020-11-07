@@ -146,6 +146,14 @@ function init(){
     $('#myForm_1 input').on('change', function() {
         if($('input[name=radio_1]:checked', '#myForm_1').val()=="skew")
             $("#myForm_2").animate({height: '168px',opacity:'1',margin:'7px 6px 6px 6px',padding:'5px',borderWidth:'0px'}, "slow");
+        else {
+            $("#myForm_2").animate({height: '0px', opacity: '0', margin: '0px', padding: '0px', borderWidth: '0px'}, "slow");
+            workload_type = 0;
+            U_1 = 10000;
+            U_2=100000000000;
+            p_get = 0.7;
+            p_put=0.0001;
+        }
     });
 
     $('#myForm_2 input').on('change', function() {
@@ -175,16 +183,6 @@ function init(){
         //setTimeout('$("#loading_canvas").animate({opacity:0}, \'fast\').css(\'z-index\',0)',5000);
         //$(document.body).css({'cursor' : 'wait'});
         //setTimeout('$(document.body).css({\'cursor\' : \'default\'})',4000);
-        var check_boxes=$('span[name="skew_check_mark"]');
-        check_boxes.one('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend',
-            function(e) {
-                if(redraw) {
-                    if(if_display) {
-                        drawContinuumsMultithread();
-                        redraw = false;
-                    }
-                }
-            });
     });
 
 
@@ -233,16 +231,12 @@ function init(){
     $("#cost_conscious_checkbox").change(function() {
         if(this.checked) {
             $("#performance_conscious_checkbox").prop( "checked", false );
-            if(if_display)
-                setTimeout('drawContinuumsMultithread()',300);
         }
     });
 
     $("#performance_conscious_checkbox").change(function() {
         if(this.checked) {
             $("#cost_conscious_checkbox").prop( "checked", false );
-            if(if_display)
-                setTimeout('drawContinuumsMultithread()',300);
         }
     });
 
@@ -954,9 +948,6 @@ function initializeCloudCheckboxes() {
 
             user_cloud_provider_enable[$(this).prop("value")]=$(this).prop("checked");
             prune_cloud_provider();
-            if (if_display)
-                drawContinuumsMultithread();
-            console.log("click");
         }
     });
 }
