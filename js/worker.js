@@ -36,7 +36,7 @@ var global_input=0;
 var if_display = 0;
 
 var compression_libraries;
-var using_compression=true;
+var using_compression=false;
 
 var SLA_factors;
 var enable_SLA=true;
