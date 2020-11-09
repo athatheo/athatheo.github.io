@@ -1207,6 +1207,9 @@ function drawContinuumsMultithread(if_regenerate=true) {
         $("#loading_canvas_2").css('opacity', '1');
         myWorker = new Worker('js/worker.js');
         var input = parseInputVariables();
+        if (input.blind_update + input.insert + input.read_modify_update + input.r + input.v != 1) {
+            return
+        }
         var parameters = {};
         parameters.U = U;
         parameters.p_put = p_put;
@@ -2698,7 +2701,9 @@ function createExplanationPopup(Variables){
     result_div.setAttribute("class","col-lg-1 col-md-1 col-sm-1")
     result_div.setAttribute("style","width: 600px;   font-size: 16px; padding-top:10px;");
 
-    var w=Variables.w;
+    var insert = Variables.insert;
+    var blind_update = Variables.blind_update;
+    var read_modify_update = Variables.read_modify_update;
     var v=Variables.v;
     var r=Variables.r;
     //transform the format of N
@@ -2723,7 +2728,7 @@ function createExplanationPopup(Variables){
     }
 
     var FPR=Variables.FPR;
-    var sum=w+v+r;
+    var sum=insert+blind_update+read_modify_update+v+r;
     var a_or_an;
     var E=parseInt(document.getElementById("E").value.replace(/\D/g,''));
     var F=parseInt(document.getElementById("F").value.replace(/\D/g,''));
@@ -2748,18 +2753,49 @@ function createExplanationPopup(Variables){
             bits_per_entry_text+="and "+((-1)*Math.log(FPR[i])/(Math.pow(Math.log(2),2))).toFixed(2)+" bits/entry, respectively, offering FPR of ";
         }
     }
-
-    if(document.getElementById('performance_conscious_checkbox').checked){
-        var text_div = document.createElement("div");
-        text_div.innerHTML+="This key-value storage configuration is tailored to a workload comprising of "+v*100/sum+"% single-result lookups, "+r*100/sum+"% no-result lookups, and "+w*100/sum+"% writes on a base data of "+N+" entries each of size "+E+" bytes (key size is "+F+" bytes and value size is "+(E-F)+" bytes). To execute a workload at scale of "+query+" queries, this configuration takes "+fixTime(Variables.latency)+" with an average throughput of "+parseInt(Variables.query_count / (Variables.latency * 24 * 60 * 60))+" queries/sec. The expected cost for this configuration is $"+Variables.cost+" per month which is slightly more than your budget of $"+parseInt(document.getElementById("cost").value.replace(/\D/g,''), 10)+" per month as a cost-conscious user!<br><br>";
-        text_div.innerHTML+="This is "+a_or_an+" "+cloud_array[Variables.cloud_provider]+" configuration that will be deployed on "+Variables.VM_instance_num+" instance"+((Variables.VM_instance_num>1)?"s":"")+" of VMs of type "+Variables.VM_instance+". Within each VM, you can use "+Variables.Vcpu_num+" CPU cores and "+Variables.memory_footprint/Variables.VM_instance_num+" GB of memory for your workload. For expected memory usage, "+(Variables.M_BF / 1024 / 1024 / 1024).toFixed(2)+" GB of memory will be reserved for storing bloom filters. For each level in sequence, we reserve"+bits_per_entry_text+fpr_text+(Variables.M_FP / 1024 / 1024 / 1024).toFixed(2)+" GB of memory will be reserved for storing fence pointers and "+(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2)+" GB will be the size of the in-memory buffer. Within disk, the data structure will be organised into "+Variables.L+" level"+((Variables.L>1)?"s":"")+" for which capacity grows by a factor of "+Variables.T+" across adjacent levels. Within each level, there will be a maximum of "+Variables.K+" run"+((Variables.K>1)?"s":"")+" for the first "+(((Variables.L-Variables.Y-1)==1)?"":(Variables.L-Variables.Y-1))+" level"+(((Variables.L-Variables.Y-1)>1)?"s":"")+" and "+Variables.Z+" run"+((Variables.Z>1)?"s":"")+" for the next "+(Variables.Y+1)+" level"+(((Variables.Y+1)>1)?"s":"")+". Disk-resident data will be compressed using "+Variables.compression_name+" compression scheme. For each lookup and write, the I/O cost is "+Variables.read_cost.toFixed(3)+" and "+Variables.update_cost.toFixed(3)+", respectively."
-
-    }else{
-        var text_div = document.createElement("div");
-        text_div.innerHTML+="This key-value storage configuration is tailored to a workload comprising of "+v*100/sum+"% single-result lookups, "+r*100/sum+"% no-result lookups, and "+w*100/sum+"% writes on a base data of "+N+" entries each of size "+E+" bytes (key size is "+F+" bytes and value size is "+(E-F)+" bytes). To execute a workload at scale of "+query+" queries, this configuration takes "+fixTime(Variables.latency)+" with an average throughput of "+parseInt(Variables.query_count / (Variables.latency * 24 * 60 * 60))+" queries/sec. The expected cost for this configuration is $"+Variables.cost+" per month which is within your budget of $"+parseInt(document.getElementById("cost").value.replace(/\D/g,''), 10)+" per month as a cost-conscious user!<br><br>";
-        text_div.innerHTML+="This is "+a_or_an+" "+cloud_array[Variables.cloud_provider]+" configuration that will be deployed on "+Variables.VM_instance_num+" instance"+((Variables.VM_instance_num>1)?"s":"")+" of VMs of type "+Variables.VM_instance+". Within each VM, you can use "+Variables.Vcpu_num+" CPU cores and "+Variables.memory_footprint/Variables.VM_instance_num+" GB of memory for your workload. For expected memory usage, "+(Variables.M_BF / 1024 / 1024 / 1024).toFixed(2)+" GB of memory will be reserved for storing bloom filters. For each level in sequence, we reserve"+bits_per_entry_text+fpr_text+(Variables.M_FP / 1024 / 1024 / 1024).toFixed(2)+" GB of memory will be reserved for storing fence pointers and "+(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2)+" GB will be the size of the in-memory buffer. Within disk, the data structure will be organised into "+Variables.L+" level"+((Variables.L>1)?"s":"")+" for which capacity grows by a factor of "+Variables.T+" across adjacent levels. Within each level, there will be a maximum of "+Variables.K+" run"+((Variables.K>1)?"s":"")+" for the first "+(((Variables.L-Variables.Y-1)==1)?"":(Variables.L-Variables.Y-1))+" level"+(((Variables.L-Variables.Y-1)>1)?"s":"")+" and "+Variables.Z+" run"+((Variables.Z>1)?"s":"")+" for the next "+(Variables.Y+1)+" level"+(((Variables.Y+1)>1)?"s":"")+". Disk-resident data will be compressed using "+Variables.compression_name+" compression scheme. For each lookup and write, the I/O cost is "+Variables.read_cost.toFixed(3)+" and "+Variables.update_cost.toFixed(3)+", respectively."
+    var text_div = document.createElement("div");
+    text_div.innerHTML+="This key-value storage configuration is tailored to a workload comprising of ";
+    if (v!=0) {
+        text_div.innerHTML+=v*100/sum+"% single-result lookups, ";
     }
-
+    if (r!=0) {
+        text_div.innerHTML+=r*100/sum+"% no-result lookups, ";
+    }
+    if (insert!=0) {
+        text_div.innerHTML+=insert*100/sum+"% inserts, ";
+    }
+    if (read_modify_update!=0) {
+        text_div.innerHTML+=read_modify_update*100/sum+"% read-modify updates, ";
+    }
+    if (blind_update!=0) {
+        text_div.innerHTML+=blind_update*100/sum+"% blind updates ";
+    }
+    text_div.innerHTML = putTheWordAndBeforeTheLastPercentage(text_div.innerHTML);
+    if (text_div.innerHTML.charAt(text_div.innerHTML.length-2).localeCompare(",")==0) {
+        text_div.innerHTML = text_div.innerHTML.slice(0, text_div.innerHTML.length-2) + " ";
+    }
+    text_div.innerHTML+="on a base data of "+N+" entries each of size "+E+" bytes (key size is "+F+" bytes and value size is "+(E-F)+" bytes). To execute a workload at scale of "+query+" queries, this configuration takes "+fixTime(Variables.latency)+" with an average throughput of "+parseInt(Variables.query_count / (Variables.latency * 24 * 60 * 60))+" queries/sec. The expected cost for this configuration is $"+Variables.cost+" per month which is "
+    if(document.getElementById('performance_conscious_checkbox').checked){
+        text_div.innerHTML+="slightly more than"
+    }else{
+        text_div.innerHTML+="within"
+    }
+    text_div.innerHTML+=" your budget of $"+parseInt(document.getElementById("cost").value.replace(/\\D/g,''), 10)+" per month as a cost-conscious user!<br><br>";
+    text_div.innerHTML+="This is "+a_or_an+" "+cloud_array[Variables.cloud_provider]+" configuration that will be deployed on "+Variables.VM_instance_num+" instance"+((Variables.VM_instance_num>1)?"s":"")+" of VMs of type "+Variables.VM_instance+". Within each VM, you can use "+Variables.Vcpu_num+" CPU cores and "+Variables.memory_footprint/Variables.VM_instance_num+" GB of memory for your workload. For expected memory usage, "+(Variables.M_BF / 1024 / 1024 / 1024).toFixed(2)+" GB of memory will be reserved for storing bloom filters. For each level in sequence, we reserve"+bits_per_entry_text+fpr_text+(Variables.M_FP / 1024 / 1024 / 1024).toFixed(2)+" GB of memory will be reserved for storing fence pointers and "+(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2)+" GB will be the size of the in-memory buffer. Within disk, the data structure will be organised into "+Variables.L+" level"+((Variables.L>1)?"s":"")+" for which capacity grows by a factor of "+Variables.T+" across adjacent levels. Within each level, there will be a maximum of "+Variables.K+" run"+((Variables.K>1)?"s":"")+" for the first "+(((Variables.L-Variables.Y-1)==1)?"":(Variables.L-Variables.Y-1))+" level"+(((Variables.L-Variables.Y-1)>1)?"s":"")+" and "+Variables.Z+" run"+((Variables.Z>1)?"s":"")+" for the next "+(Variables.Y+1)+" level"+(((Variables.Y+1)>1)?"s":"")+". Disk-resident data will be compressed using "+Variables.compression_name+" compression scheme. ";
+    text_div.innerHTML+="The chosen design incurs a per-I/O cost of ";
+    if (v!=0 || r!=0) {
+        text_div.innerHTML+=Variables.read_cost.toFixed(3)+" for lookups, ";
+    }
+    if (insert!=0) {
+        text_div.innerHTML+=Variables.update_cost.toFixed(3)+" for inserts, ";
+    }
+    if (read_modify_update!=0) {
+        text_div.innerHTML+=Variables.rmu_cost.toFixed(3)+" for read-modify-writes, ";
+    }
+    if (blind_update!=0) {
+        text_div.innerHTML+=Variables.blind_update_cost.toFixed(3)+" for blind updates, ";
+    }
+    text_div.innerHTML+="resulting n a total of "+Variables.total_cost.toFixed(3)+" for the entire workload.";
     result_div.append(text_div);
 
     var text_div_download=document.createElement("div");
@@ -2788,6 +2824,20 @@ function createExplanationPopup(Variables){
     removeAllChildren(popup.document.body);
     popup.document.body.append(result_div);
 }
+
+function putTheWordAndBeforeTheLastPercentage(string_to_edit) {
+    var last_percentage_index = string_to_edit.lastIndexOf("%");
+    var number_of_digits_in_percentage;
+    if (!isNaN(string_to_edit[last_percentage_index-1])) {
+        number_of_digits_in_percentage = 2;
+    } else {
+        number_of_digits_in_percentage = -1;
+    }
+    string_to_edit=string_to_edit.slice(0, last_percentage_index-number_of_digits_in_percentage) + " and " + string_to_edit.slice(last_percentage_index-number_of_digits_in_percentage);
+    return string_to_edit;
+}
+
+
 
 function outputParameter(result_div,value,text,highlight=false){
     var div_tmp = document.createElement("div");

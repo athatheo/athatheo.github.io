@@ -101,6 +101,8 @@ function Variables()
 
     var update_cost;
     var read_cost;
+    var rmu_cost;
+    var blind_update_cost;
     var no_result_read_cost;
     var short_scan_cost;
     var long_scan_cost;
@@ -449,6 +451,8 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
                         Variables.M_FP = M_FP;
                         Variables.read_cost = read_cost;
                         Variables.update_cost = update_cost;
+                        Variables.rmu_cost = rmu_cost;
+                        Variables.blind_update_cost = blind_update_cost;
                         Variables.short_scan_cost = short_scan_cost;
                         Variables.long_scan_cost = long_scan_cost;
                         Variables.no_result_read_cost = no_result_read_cost;
@@ -614,6 +618,8 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
                 Variables.M_FP = M_FP;
                 Variables.read_cost = read_cost;
                 Variables.update_cost = update_cost;
+                Variables.rmu_cost = rmu_cost;
+                Variables.blind_update_cost = blind_update_cost;
                 Variables.short_scan_cost = short_scan_cost;
                 Variables.long_scan_cost = long_scan_cost;
                 Variables.no_result_read_cost = no_result_read_cost;
@@ -769,6 +775,8 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
                 Variables.M_FP = M_FP;
                 Variables.read_cost = read_cost;
                 Variables.update_cost = update_cost;
+                Variables.rmu_cost = rmu_cost;
+                Variables.blind_update_cost = blind_update_cost;
                 Variables.short_scan_cost = short_scan_cost;
                 Variables.long_scan_cost = long_scan_cost;
                 Variables.no_result_read_cost = no_result_read_cost;
@@ -1139,6 +1147,8 @@ function countContinuumForExistingDesign(combination, cloud_provider, existing_s
         Variables.M_FP = M_FP;
         Variables.read_cost = read_cost;
         Variables.update_cost = update_cost;
+        Variables.rmu_cost = rmu_cost;
+        Variables.blind_update_cost = blind_update_cost;
         Variables.short_scan_cost = short_scan_cost;
         Variables.long_scan_cost = long_scan_cost;
         Variables.no_result_read_cost = no_result_read_cost;
