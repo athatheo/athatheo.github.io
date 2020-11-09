@@ -1204,43 +1204,45 @@ function drawContinuumsMultithread(if_regenerate=true) {
         }else{
             myWorker.terminate();
         }
-        $("#loading_canvas_2").css('opacity', '1');
         myWorker = new Worker('js/worker.js');
         var input = parseInputVariables();
         if (input.blind_update + input.insert + input.read_modify_update + input.r + input.v != 1) {
-            return
-        }
-        var parameters = {};
-        parameters.U = U;
-        parameters.p_put = p_put;
-        parameters.U_2 = U_2;
-        parameters.U_1 = U_1;
-        parameters.p_get = p_get;
-        parameters.cloud_provider = cloud_provider;
-        parameters.input = input;
-        parameters.workload_type = workload_type;
-        var SLA = {};
-        SLA.enable_SLA = enable_SLA;
-        SLA.enable_DB_migration = enable_DB_migration;
-        SLA.enable_dev_ops = enable_dev_ops;
-        SLA.enable_backup = enable_backup;
-        SLA.cloud_provider_enable = cloud_provider_enable;
-        parameters.SLA = SLA;
-        myWorker.postMessage(parameters);
-        console.log(parameters);
-        myWorker.onmessage = function (e) {
-            if (typeof e.data == "string") {
-                $("#loading_percentage").html(e.data);
-            } else {
-                console.log(typeof e.data);
-                var ContinuumArray = e.data;
-                global_continuums_array = ContinuumArray;
-                drawContinuumsNew(ContinuumArray);
-                displayCharts();
-                drawStats();
-                worker_running=false;
-            }
+            alert("Workload inputs do not add to 1!");
+            return 0;
+        } else {
+            $("#loading_canvas_2").css('opacity', '1');
+            var parameters = {};
+            parameters.U = U;
+            parameters.p_put = p_put;
+            parameters.U_2 = U_2;
+            parameters.U_1 = U_1;
+            parameters.p_get = p_get;
+            parameters.cloud_provider = cloud_provider;
+            parameters.input = input;
+            parameters.workload_type = workload_type;
+            var SLA = {};
+            SLA.enable_SLA = enable_SLA;
+            SLA.enable_DB_migration = enable_DB_migration;
+            SLA.enable_dev_ops = enable_dev_ops;
+            SLA.enable_backup = enable_backup;
+            SLA.cloud_provider_enable = cloud_provider_enable;
+            parameters.SLA = SLA;
+            myWorker.postMessage(parameters);
+            console.log(parameters);
+            myWorker.onmessage = function (e) {
+                if (typeof e.data == "string") {
+                    $("#loading_percentage").html(e.data);
+                } else {
+                    console.log(typeof e.data);
+                    var ContinuumArray = e.data;
+                    global_continuums_array = ContinuumArray;
+                    drawContinuumsNew(ContinuumArray);
+                    displayCharts();
+                    drawStats();
+                    worker_running=false;
+                }
 
+            }
         }
 
     }
@@ -2795,7 +2797,7 @@ function createExplanationPopup(Variables){
     if (blind_update!=0) {
         text_div.innerHTML+=Variables.blind_update_cost.toFixed(3)+" for blind updates, ";
     }
-    text_div.innerHTML+="resulting n a total of "+Variables.total_cost.toFixed(3)+" for the entire workload.";
+    text_div.innerHTML+="resulting in a total of "+Variables.total_cost.toFixed(3)+" for the entire workload.";
     result_div.append(text_div);
 
     var text_div_download=document.createElement("div");

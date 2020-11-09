@@ -29,7 +29,7 @@ function re_run(e, if_regenerate=true) {
 	}
 
     var inputIdList=[
-        "N","E","F","qS","qL","w","r","query_count","v","s","cost"
+        "N","E","F","qS","qL","insert","blind_update","read_modify_update","r","query_count","v","s","cost"
     ]
 
     for(var i=0;i<inputIdList.length;i++) {
