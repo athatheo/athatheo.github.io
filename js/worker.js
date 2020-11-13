@@ -57,7 +57,7 @@ var log=new Array();
 var cloud_provider_num=3;
 var cloud_provider_enable=[1,1,1];
 
-
+var B_TREE_CACHE_DISCOUNT_FACTOR = 0.1 // B-Tree cache discounting factor (set empirically)
 
 
 
@@ -256,7 +256,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
 
     var VM_libraries=initializeVMLibraries();
     write_percentage = insert;
-    read_percentage = 1 - write_percentage;
+    read_percentage = v;
     //Variables.cost=cost;
 
     if(using_compression==true){
@@ -318,16 +318,14 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     B_=B;
     N=Variables.N/mem_sum;
     M_BC=0;
-    // **********************************************************************
-    // LSM design space
-    // **********************************************************************
+
     for (var T = 2; T <= 15; T++) {
         for (var K = 1; K <= T - 1; K++) {
             for (var Z = 1; Z <= T - 1; Z++) {
                 for (var M_B_percent = 0.2; M_B_percent <= 1; M_B_percent += 0.2) {
                     var M_B = M_B_percent * max_RAM_purchased * 1024 * 1024 * 1024;
                     var M = max_RAM_purchased * 1024 * 1024 * 1024;
-                    X = Math.max(Math.pow(1 / Math.log(2), 2) * (Math.log(T) / 1 / (T - 1) + Math.log(K / Z) / T) * 8);
+                    X = Math.max(Math.pow(1 / Math.log(2), 2) * (Math.log(T) / (T - 1) + Math.log(K / Z) / T) * 8);
                     //console.log(X);
                     M_F_HI = N * ((X / 8) / T + F / B);
 
@@ -477,13 +475,12 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
         }
     }
 
-    var scale_factor=8;
-
     // **********************************************************************
     // BTREE design space
     // **********************************************************************
     var M_B_percent = 20;
     var M = max_RAM_purchased*1024*1024*1024;
+    var workload =
     while(M_B_percent < 100) {
         M_B = M_B_percent*M/100;
         M_FP = M - M_B;
@@ -499,118 +496,35 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
             } else {
 
             }
-            if (write_percentage != 0 || read_modify_update != 0 || blind_update != 0) {
+            if (insert != 0 || read_modify_update != 0 || blind_update != 0) {
                 if(scenario=='A'){
                     update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, C, E, B);
                 }else {
                     update_cost = analyzeUpdateCost(B, T, K, Z, L, Y, M, M_F, M_B, M_F_HI, M_F_LO);
                 }
-                total_cost +=workload*write_percentage*update_cost;
+                total_cost +=workload*insert*update_cost;
             }
-        }
-    }
-    for(var T=32;T<=128;T=T*2)
-    {
-        var K = T-1;
-        for(var Z=-1;Z<=0;Z++) // Z=-1 for hybrid logs, Z = 0 for append-only logs
-        {
-
-            M_F = (N/scale_factor)*(F)*(1.0 + (1.0/B));
-            if(M_F > M)
-            {
-                continue;
-            }
-            M_B = M - M_F;
-            L = 1;
-            Y = 0;
-            M_BF = 0.0;
-            var update_cost;
-            var read_cost;
-            var no_result_read_cost;
-            var short_scan_cost;
-            var long_scan_cost;
-            var rmu_cost = 0;
-            var blind_update_cost = 0;
-
-            if (write_percentage != 0 || read_modify_update != 0 || blind_update != 0) {
-                if(scenario=='A'){
-                    update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, C, E, B);
-                }else {
-                    update_cost = analyzeUpdateCost(B, T, K, Z, L, Y, M, M_F, M_B, M_F_HI, M_F_LO);
-                }
-            }
-            var temp=Z;
-            Z=T-1;
-            if (read_percentage != 0 || read_modify_update != 0 || blind_update != 0) {
-                if (scenario == 'A') // Avg-case
-                {
-                    if(Z == 0) // LSH-table append-only
-                    {
-                        var term1;
-                        var c, q;
-                        q = Math.pow((1.0 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 1, E)), K);
-                        console.log(getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 1, E));
-                        c = (1 - q)*(1 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 0, E));
-                        q = 1 - q*(1 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 0, E));
-                        term1 = c/q;
-                        read_cost = term1*1.8;
-                    }
-                    else if (Z == -1) // LSH-table hybrid logs
-                    {
-                        var term1;
-                        var c, q;
-                        var alpha_mutable = getAlpha_i(workload_type, 0.9*M_B,  T, K, Z, L, Y, 0, E);
-                        var alpha_read_only = getAlpha_i(workload_type, 0.1*M_B, T, K, Z, L, Y, 0, E);
-                        var alpha_0 = 1 - ((1 - alpha_mutable) * (1 - alpha_read_only));
-                        q = Math.pow((1.0 - getAlpha_i(workload_type, M_B, T, K, 1, L, Y, 1, E)), K);
-                        c = (1 - q)*(1 - alpha_0);
-                        q = 1 - q*(1 - alpha_0);
-                        term1 = c/q;
-                        //printf("in DS: %f on disk: %f\n", q, c);
-                        read_cost = term1;
-                        return;
-                    }else {
-                        read_cost = analyzeReadCostAvgCase(FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, N, E, Math.ceil(M_B), Math.ceil(E), compression_style);
-                    }
-                } else // Worst-case
-                {
+            if (v !=0 || read_modify_update!=0 || blind_update != 0) {
+                if (scenario == 'A') {
+                    read_cost = analyzeReadCostAvgCase(FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, N, E, Math.ceil(M_B), Math.ceil(E), compression_style);
+                } else {
                     read_cost = analyzeReadCost(B, E, N, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum);
-                    //logReadCost(d_list, T, K, 0, L, Y, M, M_B, M_F, M_F_HI, M_F_LO, M_FP, M_BF, FPR_sum, update_cost, read_cost, "");
                 }
-
+                total_cost += workload*v*read_cost;
             }
+
             if (read_modify_update != 0) {
                 rmu_cost = read_cost + 1.0/B;
+                total_cost += workload*read_modify_update*rmu_cost;
             }
+
             if (blind_update != 0) {
-                blind_update_cost = read_cost + 1.0/B;
-            }
-            if (short_scan_percentage != 0) {
-                short_scan_cost = analyzeShortScanCost(B, T, K, Z, L, Y, M, M_B, M_F, M_BF);
-            }
-            long_scan_cost = analyzeLongScanCost(B, s);
-            no_result_read_cost=analyzeReadCost(B, E, N, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum)-1;
-            if (scenario == 'A') // Avg-case
-            {
-                //logTotalCost(T, K, Z, L, Y, M, M_B, M_F, M_F_HI, M_F_LO, M_FP, M_BF, FPR_sum, update_cost, avg_read_cost, short_scan_cost, long_scan_cost);
-            } else // Worst-case
-            {
-                //logTotalCost(T, K, Z, L, Y, M/(1024*1024*1024), M_B/(1024*1024*1024), M_F/(1024*1024*1024), M_F_HI/(1024*1024*1024), M_F_LO/(1024*1024*1024), M_FP/(1024*1024*1024), M_BF/(1024*1024*1024), FPR_sum, update_cost, read_cost, short_scan_cost, long_scan_cost);
-                //logTotalCostSortByUpdateCost(d_list, T, K, 0, L, Y, M, M_B, M_F, M_F_HI, M_F_LO, update_cost, read_cost, "");
-            }
-            //logTotalCost(T, K, Z, L, Y, M/(1024*1024*1024), M_B/(1024*1024*1024), M_F/(1024*1024*1024), M_F_HI/(1024*1024*1024), M_F_LO/(1024*1024*1024), M_FP/(1024*1024*1024), M_BF/(1024*1024*1024), FPR_sum, update_cost, read_cost, short_scan_cost, long_scan_cost);
-            var total_cost = (read_modify_update * rmu_cost + blind_update * blind_update_cost + insert * update_cost + v * read_cost + r * no_result_read_cost) / (v + insert + r + blind_update + read_modify_update);
-
-            if(using_compression){
-                total_cost = (insert * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + insert + r);
+                blind_update_cost = read_cost;
+                blind_update_cost += 1.0/B;
+                total_cost += workload*blind_update*blind_update_cost;
             }
 
-            var total_latency= total_cost * query_count/ mem_sum / IOPS / 60 / 60 / 24;
-
-
-
-            //log_array.push([T,K,Z,read_cost.toFixed(2),update_cost.toFixed(2),total_latency.toFixed(2)]);
-            if (best_latency < 0 || total_latency < best_latency) {
+            if (total_cost < best_cost || best_cost < 0) {
                 best_latency = total_latency;
                 Variables.K = K;
                 Variables.T = T;
@@ -641,12 +555,29 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                 Variables.SLA_cost=SLA_cost;
                 Variables.data_structure="B-tree";
             }
-            Z=temp;
+        }
+        M_B_percent += 0.5;
+    }
+
+    // **********************************************************************
+    // LSM design space
+    // **********************************************************************
+    var break_from_loop = false;
+    M_B_percent = 20;
+    while (M_B < M) {
+        M_B = M_B_percent*M/100;
+        for (T=2; T<=15; T++) {
+            for (K=1; K<=T-1; K++) {
+                for (Z=1; Z<=T-1; Z++) {
+                    break_from_loop = false;
+                    for (var C=1; C<=T-1 && !break_from_loop; C++){
+                        total_cost = 0.0;
+
+                    }
+                }
+            }
         }
     }
-    //console.log(Variables.VM_info,(monthly_storage_cost + monthly_mem_cost).toFixed(3),log_array);
-    //return  max_RAM_purchased;
-    //console.log(Variables.latency);
     // **********************************************************************
     // LSH design space
     // **********************************************************************
@@ -815,6 +746,10 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     return Variables;
 }
 
+function getX(T, K, Z){
+    return
+}
+
 function getFPR( T, K, Z, L, Y, M, M_B, M_F, M_BF, data) {
     var FPR_sum = Math.exp((-M_BF*8/data)*Math.pow((Math.log(2)/Math.log(2.7182)), 2) * Math.pow(T, Y)) * Math.pow(Z, (T-1)/T) * Math.pow(K, 1/T) * Math.pow(T, (T/(T-1)))/(T-1);
     var FPR=new Array();
@@ -860,7 +795,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     //Variables.cost=cost;
 
     write_percentage = insert;
-    read_percentage = 1-write_percentage;
+    read_percentage = v;
 
     var X;
     var Y;
