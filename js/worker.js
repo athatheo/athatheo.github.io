@@ -235,7 +235,7 @@ function computeSLARelatedCost(cloud_provider,N,E)
 }
 
 
-function countContinuum(combination, cloud_provider, compression_style=0) {
+function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     var Variables = parseInputVariables();
     var N = Variables.N;
     var E = Variables.E;
@@ -318,7 +318,9 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
     B_=B;
     N=Variables.N/mem_sum;
     M_BC=0;
-
+    // **********************************************************************
+    // LSM design space
+    // **********************************************************************
     for (var T = 2; T <= 15; T++) {
         for (var K = 1; K <= T - 1; K++) {
             for (var Z = 1; Z <= T - 1; Z++) {
@@ -477,7 +479,36 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
 
     var scale_factor=8;
 
+    // **********************************************************************
+    // BTREE design space
+    // **********************************************************************
+    var M_B_percent = 20;
+    var M = max_RAM_purchased*1024*1024*1024;
+    while(M_B_percent < 100) {
+        M_B = M_B_percent*M/100;
+        M_FP = M - M_B;
+        M_B = M_B - M_BC;
+        M_BF = 0.0;
+        M_F = M_FP + M_BF;
+        total_cost = 0.0;
+        for (var T = 32; T<=128; T = T*2) {
+            var K = 1;
+            var Z = 1;
+            if (scenario == 'A') {
 
+            } else {
+
+            }
+            if (write_percentage != 0 || read_modify_update != 0 || blind_update != 0) {
+                if(scenario=='A'){
+                    update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, C, E, B);
+                }else {
+                    update_cost = analyzeUpdateCost(B, T, K, Z, L, Y, M, M_F, M_B, M_F_HI, M_F_LO);
+                }
+                total_cost +=workload*write_percentage*update_cost;
+            }
+        }
+    }
     for(var T=32;T<=128;T=T*2)
     {
         var K = T-1;
@@ -503,34 +534,7 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
 
             if (write_percentage != 0 || read_modify_update != 0 || blind_update != 0) {
                 if(scenario=='A'){
-                    if(Z == 0) // LSH-table append-only
-                    {
-                        var term1;
-                        var c, q;
-                        q = Math.pow((1.0 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 1, E)), K);
-                        //console.log(getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 1, E));
-                        c = (1 - q)*(1 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 0, E));
-                        q = 1 - q*(1 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 0, E));
-                        term1 = c/q;
-                        update_cost = term1*1.5;
-                    }
-                    else if (Z == -1) // LSH-table hybrid logs
-                    {
-                        //printf("Hybrid log in FASTER\n");
-                        var term1;
-                        var c, q;
-                        var alpha_mutable = getAlpha_i(workload_type, 0.9*M_B,  T, K, Z, L, Y, 0, E);
-                        var alpha_read_only = getAlpha_i(workload_type, 0.1*M_B, T, K, Z, L, Y, 0, E);
-                        var alpha_0 = 1 - ((1 - alpha_mutable) * (1 - alpha_read_only));
-                        q = Math.pow((1.0 - getAlpha_i(workload_type, M_B, T, K, 1, L, Y, 1, E)), K);
-                        c = (1 - q)*(1 - alpha_0);
-                        q = 1 - q*(1 - alpha_0);
-                        term1 = c/q;
-                        //printf("in DS: %f on disk: %f\n", q, c);
-                        update_cost = term1;
-                    }else {
-                        update_cost = aggregateAvgCaseUpdate(B, E, workload_type, T, K, Z, L, Y, M_B, 0);
-                    }
+                    update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, C, E, B);
                 }else {
                     update_cost = analyzeUpdateCost(B, T, K, Z, L, Y, M, M_F, M_B, M_F_HI, M_F_LO);
                 }
@@ -643,7 +647,9 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
     //console.log(Variables.VM_info,(monthly_storage_cost + monthly_mem_cost).toFixed(3),log_array);
     //return  max_RAM_purchased;
     //console.log(Variables.latency);
-
+    // **********************************************************************
+    // LSH design space
+    // **********************************************************************
     for (var T = 2; T <= 32; T++) {
         for (var M_B_percent = 0.2; M_B_percent <= 1; M_B_percent += 0.2) {
             var K=1;
@@ -831,7 +837,7 @@ function getFPR( T, K, Z, L, Y, M, M_B, M_F, M_BF, data) {
     return FPR;
 }
 
-function countContinuumForExistingDesign(combination, cloud_provider, existing_system, compression_style=0) {
+function navigateDesignSpaceForExistingDesign(combination, cloud_provider, existing_system, compression_style=0) {
     var Variables = parseInputVariables();
     var N = Variables.N;
     var E = Variables.E;
@@ -1199,22 +1205,22 @@ function buildContinuums(cloud_mode){
                     postMessage((progress * 100).toFixed(1) + "%");
                     var VMCombination = VMCombinations[i];
                     if (using_compression == false) {
-                        Variables = countContinuum(VMCombination, cloud_provider);
-                        rocks_Variables = countContinuumForExistingDesign(VMCombination, cloud_provider, "rocks");
-                        WT_Variables = countContinuumForExistingDesign(VMCombination, cloud_provider, "WT");
-                        faster_Variables = countContinuumForExistingDesign(VMCombination, cloud_provider, "FASTER");
-                        fasterh_Variables = countContinuumForExistingDesign(VMCombination, cloud_provider, "FASTER_H");
+                        Variables = navigateDesignSpace(VMCombination, cloud_provider);
+                        rocks_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "rocks");
+                        WT_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "WT");
+                        faster_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "FASTER");
+                        fasterh_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "FASTER_H");
                     } else {
                         for (var n = 0; n < 3; n++) {
                             if (Variables == 0) {
-                                Variables = countContinuum(VMCombination, cloud_provider, n);
-                                rocks_Variables = countContinuumForExistingDesign(VMCombination, cloud_provider, "rocks", 1);
-                                WT_Variables = countContinuumForExistingDesign(VMCombination, cloud_provider, "WT", 1);
-                                faster_Variables = countContinuumForExistingDesign(VMCombination, cloud_provider, "FASTER",1);
-                                fasterh_Variables = countContinuumForExistingDesign(VMCombination, cloud_provider, "FASTER_H",1);
+                                Variables = navigateDesignSpace(VMCombination, cloud_provider, n);
+                                rocks_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "rocks", 1);
+                                WT_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "WT", 1);
+                                faster_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "FASTER",1);
+                                fasterh_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "FASTER_H",1);
                             } else {
                                 var temp;
-                                temp = countContinuum(VMCombination, cloud_provider, n);
+                                temp = navigateDesignSpace(VMCombination, cloud_provider, n);
                                 if (temp.latency < Variables.latency)
                                     Variables = temp;
                                 /*
@@ -1241,9 +1247,9 @@ function buildContinuums(cloud_mode){
             var VMCombinations = getAllVMCombinations(cloud_provider, VM_libraries);
             for (var i = 0; i < VMCombinations.length; i++) {
                 var VMCombination = VMCombinations[i];
-                var Variables = countContinuum(VMCombination, cloud_provider);
-                var rocks_Variables = countContinuumForExistingDesign(VMCombination, cloud_provider, "rocks");
-                var WT_Variables = countContinuumForExistingDesign(VMCombination, cloud_provider, "WT");
+                var Variables = navigateDesignSpace(VMCombination, cloud_provider);
+                var rocks_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "rocks");
+                var WT_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "WT");
                 var info = ("<b>" + VM_libraries[cloud_provider].provider_name + " :</b><br>T=" + Variables.T + ", K=" + Variables.K + ", Z=" + Variables.Z + ", L=" + Variables.L + "<br>M_B=" + (Variables.Buffer / 1024 / 1024 / 1024).toFixed(2) + " GB, M_BF=" + (Variables.M_BF / 1024 / 1024 / 1024).toFixed(2) + " GB<br>M_FP=" + (Variables.M_FP / 1024 / 1024 / 1024).toFixed(2) + " GB, " + Variables.VM_info + "<br>Latency=" + fixTime(Variables.latency) + "<br>Cost=" + Variables.cost);
                 var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables];
                 result_array.push(result);
@@ -1371,6 +1377,42 @@ function analyzeUpdateCost(B, T, K, Z, L, Y, M, M_F, M_B, M_F_HI, M_F_LO) {
         update_cost = (((T * (L - 1)) / K) + (T / Z)) / B;
     } else {
         update_cost = (((T * (L - Y - 1)) / K) + (T / Z) * (Y + 1)) / B;
+    }
+    return update_cost;
+}
+
+function analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, C, E, B){
+    var update_cost;
+    if(Z == 0) // LSH-table append-only
+    {
+        var scale_up = 1.5;
+        var term1;
+        var q = Math.pow((1.0 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 1, E)), K);
+        //console.log(getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 1, E));
+        var c = (1 - q)*(1 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 0, E));
+        q = 1 - q*(1 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 0, E));
+        term1 = c/q;
+        update_cost = term1 * scale_up;
+    }
+    else if (Z == -1) // LSH-table hybrid logs
+    {
+        //printf("Hybrid log in FASTER\n");
+        var term1;
+        var c, q;
+        var alpha_mutable = getAlpha_i(workload_type, 0.9*M_B,  T, K, Z, L, Y, 0, E);
+        var alpha_read_only = getAlpha_i(workload_type, 0.1*M_B, T, K, Z, L, Y, 0, E);
+        var alpha_0 = 1 - ((1 - alpha_mutable) * (1 - alpha_read_only));
+        q = Math.pow((1.0 - getAlpha_i(workload_type, M_B, T, K, 1, L, Y, 1, E)), K);
+        c = (1 - q)*(1 - alpha_0);
+        q = 1 - q*(1 - alpha_0);
+        term1 = c/q;
+        //printf("in DS: %f on disk: %f\n", q, c);
+        update_cost = term1;
+        if (update_cost > 1.0/B) {
+            update_cost = 1.0/B;
+        }
+    }else {
+        update_cost = aggregateAvgCaseUpdate(B, E, workload_type, T, K, Z, L, Y, M_B, 0);
     }
     return update_cost;
 }
