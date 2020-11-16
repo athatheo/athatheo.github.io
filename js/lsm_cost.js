@@ -112,10 +112,13 @@ function Variables()
 
     var update_cost;
     var read_cost;
+    var rmw_cost;
+    var blind_update_cost;
     var no_result_read_cost;
     var short_scan_cost;
     var long_scan_cost;
     var total_cost;
+    var SLA_cost;
 
     var query_count;
 
@@ -128,6 +131,8 @@ function Variables()
     var Vcpu_num;
 
     var compression_name;
+
+    var is_classical;
 
 }
 
@@ -166,9 +171,9 @@ function parseInputVariables()
 
     //Workload
     parsedBoxes.s = parseInt(document.getElementById("s").value.replace(/\D/g,''), 10);
-    parsedBoxes.insert = parseFloat(document.getElementById("insert_workload").value);
-    parsedBoxes.blind_update = parseFloat(document.getElementById("blind_update_workload").value);
-    parsedBoxes.read_modify_update = parseFloat(document.getElementById("read_modify_update_workload").value);
+    parsedBoxes.insert_percentage = parseFloat(document.getElementById("insert_workload").value);
+    parsedBoxes.blind_update_percentage = parseFloat(document.getElementById("blind_update_workload").value);
+    parsedBoxes.rmw_percentage = parseFloat(document.getElementById("read_modify_update_workload").value);
     parsedBoxes.r = parseFloat(document.getElementById("r").value);
     parsedBoxes.v = parseFloat(document.getElementById("v").value);
     parsedBoxes.qL = parseFloat(document.getElementById("qL").value);
@@ -252,9 +257,9 @@ function navigateDesignSpace() {
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
-    var insert = Variables.insert;
-    var blind_update = Variables.blind_update;
-    var read_modify_update = Variables.read_modify_update;
+    var insert = Variables.insert_percentage;
+    var blind_update = Variables.blind_update_percentage;
+    var read_modify_update = Variables.rmw_percentage;
     var r = Variables.r;
     var v = Variables.v;
     var qL = Variables.qL;
@@ -520,9 +525,9 @@ function countThroughput(cost, cloud_provider) {
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
-    var insert = Variables.insert;
-    var blind_update = Variables.blind_update;
-    var read_modify_update = Variables.read_modify_update;
+    var insert = Variables.insert_percentage;
+    var blind_update = Variables.blind_update_percentage;
+    var read_modify_update = Variables.rmw_percentage;
     console.log(insert);
     var r = Variables.r;
     var v = Variables.v;
@@ -684,9 +689,9 @@ function countContinuum(combination, cloud_provider, compression_style=0) {
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
-    var insert = Variables.insert;
-    var blind_update = Variables.blind_update;
-    var read_modify_update = Variables.read_modify_update;
+    var insert = Variables.insert_percentage;
+    var blind_update = Variables.blind_update_percentage;
+    var read_modify_update = Variables.rmw_percentage;
     var r = Variables.r;
     var v = Variables.v;
     var qL = Variables.qL;
@@ -910,9 +915,9 @@ function countContinuumForExistingDesign(combination, cloud_provider, existing_s
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
-    var insert = Variables.insert;
-    var blind_update = Variables.blind_update;
-    var read_modify_update = Variables.read_modify_update;
+    var insert = Variables.insert_percentage;
+    var blind_update = Variables.blind_update_percentage;
+    var read_modify_update = Variables.rmw_percentage;
     var r = Variables.r;
     var v = Variables.v;
     var qL = Variables.qL;
