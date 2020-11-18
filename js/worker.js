@@ -1,6 +1,6 @@
 
 console.log(cri_miss_count);
-
+var justThis = true;
 var input;
 var query_count = 10000000;
 var read_percentage = 50;
@@ -237,9 +237,11 @@ function computeSLARelatedCost(cloud_provider,N,E)
 
 function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     var Variables = parseInputVariables();
+
     var data = Variables.N;
     var E = Variables.E;
     var F = Variables.F;
+
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
@@ -269,7 +271,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     var SLA_cost=computeSLARelatedCost(cloud_provider,Variables.N,Variables.E);
 
     var X;
-    var Y;
+    var Y = 0;
     var L;
     var M_F_HI;
     var M_F; // = ((B*E + (M - M_F)) > 0 ? B*E + (M - M_F) : (B*E)); // byte
@@ -326,6 +328,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     B_=B;
     data=max_RAM_purchased*Variables.N/mem_sum;
     M_BC=0;
+    var M_B;
 
     // **********************************************************************
     // BTREE design space
@@ -343,9 +346,9 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
             var K = 1;
             var Z = 1;
             if (scenario == 'A') {
-                L = getNoOfLevelsAvgCase(L, M_B, T, data, E)
+                L = getNoOfLevelsAvgCase(M_B, T, data, E)
             } else {
-                L = getNoOfLevels(L, M_B, T, data, E)
+                L = getNoOfLevels(M_B, T, data, E)
             }
             if(scenario=='A'){
                 update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B);
@@ -358,6 +361,20 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
             rmw_cost = read_cost + 1.0/B;
             blind_update_cost = read_cost + 1.0/B;
             total_IO = workload*(insert_percentage*update_cost + v*read_cost + r*no_result_read_cost + rmw_percentage*rmw_cost + blind_update_percentage*blind_update_cost);
+            if (justThis) {
+                console.log(workload+"Workload")
+                console.log(insert_percentage+"insert_percentage")
+                console.log(update_cost+"update_cost")
+                console.log(v+"read_cost")
+                console.log(r+"r")
+                console.log(no_result_read_cost+"no_result_read_cost")
+                console.log(rmw_percentage+"rmw_percentage")
+                console.log(rmw_cost+"rmw_cost")
+                console.log(blind_update_percentage+"blind_update_percentage")
+                console.log(blind_update_cost+"blind_update_cost")
+                console.log(total_IO);
+                justThis = false;
+            }
 
             var total_latency= total_IO / IOPS / 60 / 60 / 24; // Maybe divide this by 1024*1024*1024
 
@@ -419,9 +436,9 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                         }
                         M_F = set_M_F(M_F, M_B, M, M_F_HI, M_F_LO)
                         if (scenario == 'A') {
-                            L = getNoOfLevelsAvgCase(L, M_B, T, data, E);
+                            L = getNoOfLevelsAvgCase(M_B, T, data, E);
                         } else {
-                            L = getNoOfLevels(L, M_B, T, data, E);
+                            L = getNoOfLevels(M_B, T, data, E);
                         }
                         var temp = getY(M_FP, M_F, M_F_HI, M_F_LO, X, T, L, data, F, B);
                         Y = temp.Y;
@@ -649,13 +666,13 @@ function getNoOfLevelsWacky(L, M_B, T, data, C, E)
     }
 }
 
-function getNoOfLevels(L, M_B, T, data, E)
+function getNoOfLevels(M_B, T, data, E)
 {
+    var L;
     if(M_B == 0)
     {
         console.log("ERROR!!!! Buffer memory should never be set to 0.");
         L = 0; // This is not really true. If
-        return L;
     }
     else
     {
@@ -665,18 +682,18 @@ function getNoOfLevels(L, M_B, T, data, E)
             multiplier_from_buffer = 1;
         }
         L = Math.ceil(Math.log(multiplier_from_buffer)/Math.log(T));
-        return L;
     }
+    return L;
 }
 
-function getNoOfLevelsAvgCase(L, M_B, T, data, E)
+function getNoOfLevelsAvgCase(M_B, T, data, E)
 {
     var universe_max = workload_type == 0 ? U : U_1 + U_2;
     if (workload_type == 1) {
         universe_max = U_1 + (1 - p_put) * (data);
     }
     var size = universe_max < data ? universe_max : data;
-    getNoOfLevels(L, M_B, T, size, E);
+    return getNoOfLevels(M_B, T, size, E);
 }
 function getFPR( T, K, Z, L, Y, M, M_B, M_F, M_BF, data) {
     var FPR_sum = Math.exp((-M_BF*8/data)*Math.pow((Math.log(2)/Math.log(2.7182)), 2) * Math.pow(T, Y)) * Math.pow(Z, (T-1)/T) * Math.pow(K, 1/T) * Math.pow(T, (T/(T-1)))/(T-1);
@@ -734,7 +751,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     var SLA_cost=computeSLARelatedCost(cloud_provider,Variables.N,Variables.E);
 
     var X;
-    var Y;
+    var Y=0;
     var L;
     var M_F_HI;
     var M_F; // = ((B*E + (M - M_F)) > 0 ? B*E + (M - M_F) : (B*E)); // byte
@@ -873,13 +890,13 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         //printf("T:%d, K:%d, Z:%d, M_B:%f, M_F:%f\n", T, K, Z, M_B/(1024*1024*1024), M_F/(1024*1024*1024));
     }
     if (scenario == 'A') {
-        L = getNoOfLevels(L, M_B, T, data, E);
+        L = getNoOfLevels(M_B, T, data, E);
     } else {
-        L = getNoOfLevelsAvgCase(L, M_B, T, data, E);
+        L = getNoOfLevelsAvgCase(M_B, T, data, E);
     }
 
     if (L<=0) {
-        console.log("L: ",L);
+        console.log("L: ", L);
         return -1;
     }
 
@@ -1008,7 +1025,7 @@ function buildContinuums(cloud_mode){
                             } else {
                                 var temp;
                                 temp = navigateDesignSpace(VMCombination, cloud_provider, n);
-                                if (temp.latency < Variables.latency)
+                                if (temp.total_cost < Variables.total_cost)
                                     Variables = temp;
                                 /*
                                 temp=countContinuumForExistingDesign(VMCombination, cloud_provider, "rocks", n);
@@ -1023,7 +1040,7 @@ function buildContinuums(cloud_mode){
                     var info = ("<b>" + VM_libraries[cloud_provider].provider_name + " :</b><br>T=" + Variables.T + ", K=" + Variables.K + ", Z=" + Variables.Z + ", L=" + Variables.L + "<br>M_B=" + (Variables.Buffer / 1024 / 1024 / 1024).toFixed(2) + " GB, M_BF=" + (Variables.M_BF / 1024 / 1024 / 1024).toFixed(2) + " GB<br>M_FP=" + (Variables.M_FP / 1024 / 1024 / 1024).toFixed(2) + " GB, " + Variables.VM_info + "<br>Latency=" + fixTime(Variables.latency) + "<br>Cost=" + Variables.cost);
                     if (using_compression)
                         info += "<br>Compression: " + Variables.compression_name;
-                    var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables, faster_Variables, fasterh_Variables];
+                    var result = [Variables.cost, Variables.total_cost, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables, faster_Variables, fasterh_Variables];
                     result_array.push(result);
                 }
             }
@@ -1038,7 +1055,7 @@ function buildContinuums(cloud_mode){
                 var rocks_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "rocks");
                 var WT_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "WT");
                 var info = ("<b>" + VM_libraries[cloud_provider].provider_name + " :</b><br>T=" + Variables.T + ", K=" + Variables.K + ", Z=" + Variables.Z + ", L=" + Variables.L + "<br>M_B=" + (Variables.Buffer / 1024 / 1024 / 1024).toFixed(2) + " GB, M_BF=" + (Variables.M_BF / 1024 / 1024 / 1024).toFixed(2) + " GB<br>M_FP=" + (Variables.M_FP / 1024 / 1024 / 1024).toFixed(2) + " GB, " + Variables.VM_info + "<br>Latency=" + fixTime(Variables.latency) + "<br>Cost=" + Variables.cost);
-                var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables];
+                var result = [Variables.cost, Variables.total_cost, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables];
                 result_array.push(result);
             }
         }
@@ -1128,6 +1145,7 @@ function aggregateAvgCaseUpdate( B, E, type, T, K, Z, L, Y, M_B, worst_case) {
     term1 /=  B;
 
     term2 = EB * Math.pow(T, L - Y)/Z + EB * Math.pow(T, L - Y-1);
+
     term2 /=  B;
     var Q = getQ(type, L - Y - 1, EB, T, K, worst_case);
     if (Q < 0) {
@@ -1153,6 +1171,7 @@ function aggregateAvgCaseUpdate( B, E, type, T, K, Z, L, Y, M_B, worst_case) {
     //console.log(term1,term2,term3);
     // printf("term1:%f, term2:%f, term3:%f\n", term1, term2, term3);
     // printf("T:%d, K:%d, Z:%d, L:%d, Y:%d, MB:%f, EB:%f, N:%ld\n", T, K, Z, L, Y, M_B, EB, N);
+
     return term1 + term2 + term3;
 
 
@@ -1172,6 +1191,7 @@ function analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B){
     var update_cost;
     if(Z == 0) // LSH-table append-only
     {
+
         var scale_up = 1.5;
         var term1;
         var q = Math.pow((1.0 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 1, E)), K);
@@ -1232,8 +1252,8 @@ function analyzeReadCostAvgCase(FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data,
         c = (1 - q)*(1 - alpha_0);
         term1 = c;
         avg_read_cost = term1;
-        if (avg_read_cost > 1.0/B) {
-            avg_read_cost = 1.0/B;
+        if (avg_read_cost > 1.0/B_) {
+            avg_read_cost = 1.0/B_;
         }
         return avg_read_cost;
     }
