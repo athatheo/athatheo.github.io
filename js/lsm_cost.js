@@ -12,11 +12,11 @@ var workload_exec_time = 0;
 var total_budget;
 var max_RAM_purchased; // in GB
 var no_of_RAM_blocks;
-var U = 10000000000;
+var U = 100000000000000;
 // static double U = 300000000;
-var p_put = 0.0001; // fraction of the time that you call get on elements in U_1
-var U_1 = 10000;
-var U_2 = 100000000000;
+var p_put = 0.2; // fraction of the time that you call get on elements in U_1
+var U_1 = 100000;
+var U_2 = 1000000000000;
 // NOTE: it must always be true that (p_put / U_1) > (1 / U_2)
 var p_get = 0.7;
 

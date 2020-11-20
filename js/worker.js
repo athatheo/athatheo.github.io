@@ -1,6 +1,7 @@
 
 console.log(cri_miss_count);
 var justThis = true;
+var passedReturn = false;
 var input;
 var query_count = 10000000;
 var read_percentage = 50;
@@ -10,11 +11,11 @@ var s = 64;
 var head ;
 var total_budget;
 var max_RAM_purchased; // in GB
-var U = 10000000000;
+var U = 100000000000000;
 // static double U = 300000000;
-var p_put = 0.0001; // fraction of the time that you call get on elements in U_1
-var U_1 = 10000;
-var U_2 = 100000000000;
+var p_put = 0.2; // fraction of the time that you call get on elements in U_1
+var U_1 = 100000;
+var U_2 = 1000000000000;
 // NOTE: it must always be true that (p_put / U_1) > (1 / U_2)
 var p_get = 0.7;
 var B_;
@@ -783,7 +784,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
 
     for(var i=0;i<VM_libraries[cloud_provider].no_of_instances;i++){
         if(combination[i]>0){
-            mem_sum=combination[i];
+            mem_sum=combination[i]*VM_libraries[cloud_provider].mem_of_instance[i];
             max_RAM_purchased=VM_libraries[cloud_provider].mem_of_instance[i];
             monthly_mem_cost=mem_sum*VM_libraries[cloud_provider].rate_of_instance[i]*24*30;
             Variables.VM_info= (mem_sum+" X "+VM_libraries[cloud_provider].name_of_instance[i]);
@@ -810,6 +811,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     var data=max_RAM_purchased*N/mem_sum;
     M_BC=0;
     var M = max_RAM_purchased * 1024 * 1024 * 1024;
+    var workload = max_RAM_purchased*query_count/mem_sum;
 
     if(existing_system=="rocks") {
         var T = 10;
@@ -820,13 +822,16 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         M_BF = data * 10.0 / 8.0; // 10 bits/entry in RocksDB is default and convert to byte because everything else is in byte
         M_F = M_FP + M_BF;
         if (M_F >= M) {
-            //printf("System %s needs at least %f GB of memory\n", existing_system, ((M_F/(1024*1024*1024))+1.0));
+            passedReturn = false;
+            //console.log("System "+existing_system+" needs at least"+((M_F/(1024*1024*1024))+1.0)+ " GB of memory\n", existing_system, ((M_F/(1024*1024*1024))+1.0));
             return -1;
         }
+        //console.log("After return M_FP: "+M_FP+" M_BF: "+M_BF+" M_F: "+M_F+" M: "+M);
+        passedReturn = true;
+        console.log("Return passed");
         M_BC=0;
         M_B = M - M_F;
         M_B = M_B < 0 ? 0.0 : M_B;
-
     }
 
     if(existing_system=="WT")
@@ -872,8 +877,6 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     {
         var scale_factor = 8; // We assume about 1000 keys fit in the in-memory hash table
         M_F = (data/scale_factor)*(F)*(1.0 + (1.0/B));
-        var M = max_RAM_purchased * 1024 * 1024 * 1024;
-        M_FP=0;
         if(M_F >= M)
         {
             //printf("M: %f M_F: %f\n", M/(1024*1024*1024), M_F/(1024*1024*1024));
@@ -889,10 +892,12 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         M_BC = 0.0;
         //printf("T:%d, K:%d, Z:%d, M_B:%f, M_F:%f\n", T, K, Z, M_B/(1024*1024*1024), M_F/(1024*1024*1024));
     }
-    if (scenario == 'A') {
-        L = getNoOfLevels(M_B, T, data, E);
-    } else {
-        L = getNoOfLevelsAvgCase(M_B, T, data, E);
+    if (existing_system != "FASTER" && existing_system != "FASTER_H"){
+        if (scenario == 'A') {
+            L = getNoOfLevels(M_B, T, data, E);
+        } else {
+            L = getNoOfLevelsAvgCase(M_B, T, data, E);
+        }
     }
 
     if (L<=0) {
@@ -934,7 +939,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     no_result_read_cost=analyzeReadCost(B, E, N, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum)-1;
     long_scan_cost = analyzeLongScanCost(B, s);
 
-    var total_IO = ( insert_percentage * update_cost + blind_update_percentage * blind_update_cost + rmw_percentage * rmw_cost+ v * read_cost + r * no_result_read_cost) / (rmw_percentage + blind_update_percentage + v + insert_percentage + r);
+    total_IO = workload*( insert_percentage * update_cost + blind_update_percentage * blind_update_cost + rmw_percentage * rmw_cost+ v * read_cost + r * no_result_read_cost);
 
     if(using_compression){
         total_IO = (insert_percentage * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + insert_percentage + r);
@@ -1011,6 +1016,9 @@ function buildContinuums(cloud_mode){
                     if (using_compression == false) {
                         Variables = navigateDesignSpace(VMCombination, cloud_provider);
                         rocks_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "rocks");
+                        if (passedReturn) {
+                            console.log(rocks_Variables);
+                        }
                         WT_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "WT");
                         faster_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "FASTER");
                         fasterh_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "FASTER_H");
@@ -1815,7 +1823,7 @@ function getStorageCost(Variables, cloud_provider)
         {
             IOPS = 30000;
         }
-        monthly_storage_cost = storage*0.24;
+        monthly_storage_cost = storage*0.17;
     }
     if(cloud_provider == 2)
     {

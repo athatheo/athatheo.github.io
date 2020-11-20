@@ -53,8 +53,8 @@ function re_run(e, if_regenerate=true) {
 function init(){
 
     // Dataset and Environment
-    document.getElementById("N").value=numberWithCommas(20000000000); //(10M values)
-    document.getElementById("E").value=2048;
+    document.getElementById("N").value=numberWithCommas(1000000000000); //(10M values)
+    document.getElementById("E").value=128;
     //document.getElementById("B").value=4096; //in B
     document.getElementById("F").value=64;
 
@@ -62,11 +62,11 @@ function init(){
     document.getElementById("s").value = 8192;
     document.getElementById("qS").value = 0;
     //document.getElementById("w").value = 0.1 This was before adding the insert to read modify boxes
-    document.getElementById("insert_workload").value = 0.1;
+    document.getElementById("insert_workload").value = 0.5;
     document.getElementById("blind_update_workload").value = 0.0;
     document.getElementById("read_modify_update_workload").value = 0.0;
     document.getElementById("r").value = 0.0;
-    document.getElementById("v").value = 0.9;
+    document.getElementById("v").value = 0.5;
     document.getElementById("qL").value = 0.0;
     //document.getElementById("X").value = numberWithCommas(0);
 
