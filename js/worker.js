@@ -1,7 +1,6 @@
 
 console.log(cri_miss_count);
 var justThis = true;
-var passedReturn = false;
 var input;
 var query_count = 10000000;
 var read_percentage = 50;
@@ -822,13 +821,10 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         M_BF = data * 10.0 / 8.0; // 10 bits/entry in RocksDB is default and convert to byte because everything else is in byte
         M_F = M_FP + M_BF;
         if (M_F >= M) {
-            passedReturn = false;
             //console.log("System "+existing_system+" needs at least"+((M_F/(1024*1024*1024))+1.0)+ " GB of memory\n", existing_system, ((M_F/(1024*1024*1024))+1.0));
             return -1;
         }
         //console.log("After return M_FP: "+M_FP+" M_BF: "+M_BF+" M_F: "+M_F+" M: "+M);
-        passedReturn = true;
-        console.log("Return passed");
         M_BC=0;
         M_B = M - M_F;
         M_B = M_B < 0 ? 0.0 : M_B;
@@ -1016,9 +1012,6 @@ function buildContinuums(cloud_mode){
                     if (using_compression == false) {
                         Variables = navigateDesignSpace(VMCombination, cloud_provider);
                         rocks_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "rocks");
-                        if (passedReturn) {
-                            console.log(rocks_Variables);
-                        }
                         WT_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "WT");
                         faster_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "FASTER");
                         fasterh_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "FASTER_H");
