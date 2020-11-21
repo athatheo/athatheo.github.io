@@ -2126,7 +2126,7 @@ function drawDesigns(best_array, cost) {
             l2=-1;
         }else {
             for (var i = 1; i < best_array.length; i++) {
-                console.log(latency);
+                //console.log(latency);
                 if (best_array[i][0] >= cost||(best_array[i][1]*24<latency&&!isNaN(latency))) {
                     //drawDiagram(best_array[i-1][5], 'cost_result_diagram1');
                     //drawDiagram(best_array[i][5], 'cost_result_diagram2');
@@ -2524,7 +2524,6 @@ function outputParameters(Variables, id, l) {
     // outputParameter(result_div,Variables.K,"Hot merge threshold (K)");
     // outputParameter(result_div,Variables.Z,"Cold merge threshold (Z)");
     // outputParameter(result_div,Variables.VM_instance+" x "+Variables.VM_instance_num,"VM type");
-    console.log(Variables);
     generateDownload(Variables, result_div, id);
 }
 
@@ -2703,9 +2702,9 @@ function createExplanationPopup(Variables){
     result_div.setAttribute("class","col-lg-1 col-md-1 col-sm-1")
     result_div.setAttribute("style","width: 600px;   font-size: 16px; padding-top:10px;");
 
-    var insert = Variables.insert;
-    var blind_update = Variables.blind_update;
-    var read_modify_update = Variables.read_modify_update;
+    var insert_percentage = Variables.insert_percentage;
+    var blind_update_percentage = Variables.blind_update_percentage;
+    var rmw_percentage = Variables.rmw_percentage;
     var v=Variables.v;
     var r=Variables.r;
     //transform the format of N
@@ -2730,7 +2729,7 @@ function createExplanationPopup(Variables){
     }
 
     var FPR=Variables.FPR;
-    var sum=insert+blind_update+read_modify_update+v+r;
+    var sum=insert_percentage+blind_update_percentage+rmw_percentage+v+r;
     var a_or_an;
     var E=parseInt(document.getElementById("E").value.replace(/\D/g,''));
     var F=parseInt(document.getElementById("F").value.replace(/\D/g,''));
@@ -2763,14 +2762,14 @@ function createExplanationPopup(Variables){
     if (r!=0) {
         text_div.innerHTML+=r*100/sum+"% no-result lookups, ";
     }
-    if (insert!=0) {
-        text_div.innerHTML+=insert*100/sum+"% inserts, ";
+    if (insert_percentage!=0) {
+        text_div.innerHTML+=insert_percentage*100/sum+"% inserts, ";
     }
-    if (read_modify_update!=0) {
-        text_div.innerHTML+=read_modify_update*100/sum+"% read-modify updates, ";
+    if (rmw_percentage!=0) {
+        text_div.innerHTML+=rmw_percentage*100/sum+"% read-modify updates, ";
     }
-    if (blind_update!=0) {
-        text_div.innerHTML+=blind_update*100/sum+"% blind updates ";
+    if (blind_update_percentage!=0) {
+        text_div.innerHTML+=blind_update_percentage*100/sum+"% blind updates ";
     }
     text_div.innerHTML = putTheWordAndBeforeTheLastPercentage(text_div.innerHTML);
     if (text_div.innerHTML.charAt(text_div.innerHTML.length-2).localeCompare(",")==0) {
@@ -2788,13 +2787,13 @@ function createExplanationPopup(Variables){
     if (v!=0 || r!=0) {
         text_div.innerHTML+=Variables.read_cost.toFixed(3)+" for lookups, ";
     }
-    if (insert!=0) {
+    if (insert_percentage!=0) {
         text_div.innerHTML+=Variables.update_cost.toFixed(3)+" for inserts, ";
     }
-    if (read_modify_update!=0) {
-        text_div.innerHTML+=Variables.rmu_cost.toFixed(3)+" for read-modify-writes, ";
+    if (rmw_percentage!=0) {
+        text_div.innerHTML+=Variables.rmw_cost.toFixed(3)+" for read-modify-writes, ";
     }
-    if (blind_update!=0) {
+    if (blind_update_percentage!=0) {
         text_div.innerHTML+=Variables.blind_update_cost.toFixed(3)+" for blind updates, ";
     }
     text_div.innerHTML+="resulting in a total of "+Variables.total_cost.toFixed(3)+" for the entire workload.";
