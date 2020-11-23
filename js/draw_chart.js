@@ -1228,7 +1228,6 @@ function drawContinuumsMultithread(if_regenerate=true) {
             SLA.cloud_provider_enable = cloud_provider_enable;
             parameters.SLA = SLA;
             myWorker.postMessage(parameters);
-            console.log(parameters);
             myWorker.onmessage = function (e) {
                 if (typeof e.data == "string") {
                     $("#loading_percentage").html(e.data);
@@ -1547,7 +1546,7 @@ function drawContinuumsNew(ContinuumArray){
 
     */
 
-    console.log(best_array);
+    //console.log(best_array);
 
     var chart_array=drawDesigns(best_array,cost);
 
@@ -2126,8 +2125,8 @@ function drawDesigns(best_array, cost) {
             l2=-1;
         }else {
             for (var i = 1; i < best_array.length; i++) {
-                //console.log(latency);
                 if (best_array[i][0] >= cost||(best_array[i][1]*24<latency&&!isNaN(latency))) {
+                    // console.log("best_array[i][0]: "+ best_array[i][0] + " i: "+i+" cost: "+cost+" bbest_array[i][1]: "+best_array[i][1]+" latency: "+latency+ " isnan: "+!isNaN(latency));
                     //drawDiagram(best_array[i-1][5], 'cost_result_diagram1');
                     //drawDiagram(best_array[i][5], 'cost_result_diagram2');
                     design_1_index = i - 1;

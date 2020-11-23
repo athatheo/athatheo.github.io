@@ -2102,7 +2102,6 @@ function getBestDesignEverArray(result_array) {
     var best_design_index;
     var best_y_ever = -1;
     var bestDesignArray = new Array();
-    console.log(result_array);
     for (var i = 0; i < result_array.length; i++) {
         if (result_array[i][0] == last_x) {
             if (best_y == -1 || result_array[i][1] < best_y) {

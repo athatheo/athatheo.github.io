@@ -1,5 +1,7 @@
 
 console.log(cri_miss_count);
+var rocks_not_passed = 0;
+var rocks_passed = 0;
 var justThis = true;
 var input;
 var query_count = 10000000;
@@ -16,7 +18,7 @@ var p_put = 0.2; // fraction of the time that you call get on elements in U_1
 var U_1 = 100000;
 var U_2 = 1000000000000;
 // NOTE: it must always be true that (p_put / U_1) > (1 / U_2)
-var p_get = 0.7;
+var p_get = 0.05;
 var B_;
 
 var MIN_RAM_SIZE;
@@ -302,7 +304,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
 
     for(var i=0;i<VM_libraries[cloud_provider].no_of_instances;i++){
         if(combination[i]>0){
-            mem_sum=combination[i];
+            mem_sum=combination[i]*VM_libraries[cloud_provider].mem_of_instance[i];
             max_RAM_purchased=VM_libraries[cloud_provider].mem_of_instance[i];
             monthly_mem_cost=mem_sum*VM_libraries[cloud_provider].rate_of_instance[i]*24*30;
             Variables.VM_info= (mem_sum+" X "+VM_libraries[cloud_provider].name_of_instance[i]);
@@ -612,7 +614,11 @@ function set_M_F(M_F, M_B, M, M_F_HI, M_F_LO) {
 }
 
 function getX(T, K, Z){
-    return Math.pow(1 / Math.log(2), 2) * (Math.log(T) / 1 / (T - 1) + Math.log(K / Z) / T) * 8;
+    var x = Math.pow(1 / Math.log(2), 2) * (Math.log(T) / 1 / (T - 1) + Math.log(K / Z) / T) * 8;
+    if (x < 0) {
+        return 0;
+    }
+    return x;
 }
 
 function getY(M_FP, M_F, M_F_HI, M_F_LO, X, T, L, data, F, B) {
@@ -822,8 +828,10 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         M_F = M_FP + M_BF;
         if (M_F >= M) {
             //console.log("System "+existing_system+" needs at least"+((M_F/(1024*1024*1024))+1.0)+ " GB of memory\n", existing_system, ((M_F/(1024*1024*1024))+1.0));
+            rocks_not_passed++;
             return -1;
         }
+        rocks_passed++;
         //console.log("After return M_FP: "+M_FP+" M_BF: "+M_BF+" M_F: "+M_F+" M: "+M);
         M_BC=0;
         M_B = M - M_F;
@@ -890,14 +898,14 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     }
     if (existing_system != "FASTER" && existing_system != "FASTER_H"){
         if (scenario == 'A') {
-            L = getNoOfLevels(M_B, T, data, E);
-        } else {
             L = getNoOfLevelsAvgCase(M_B, T, data, E);
+        } else {
+            L = getNoOfLevels(M_B, T, data, E);
         }
     }
 
     if (L<=0) {
-        console.log("L: ", L);
+        //console.log("L: ", L);
         return -1;
     }
 
@@ -945,36 +953,37 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
 
     if(L==0)
         total_latency=0;
-
-    Variables.K = K;
-    Variables.T = T;
-    Variables.L = L;
-    Variables.Z = Z;
-    Variables.Y = Y;
-    Variables.Buffer = M_B;
-    Variables.M_BF = M_BF;
-    Variables.M_FP = M_FP;
-    Variables.read_cost = read_cost;
-    Variables.update_cost = update_cost;
-    Variables.rmw_cost = rmw_cost;
-    Variables.blind_update_cost = blind_update_cost;
-    Variables.short_scan_cost = short_scan_cost;
-    Variables.long_scan_cost = long_scan_cost;
-    Variables.no_result_read_cost = no_result_read_cost;
-    Variables.total_cost = total_IO;
-    Variables.latency = total_latency;
-    Variables.cost = (monthly_storage_cost + monthly_mem_cost).toFixed(3);
-    if(enable_SLA){
-        Variables.cost = (monthly_storage_cost + monthly_mem_cost + SLA_cost).toFixed(3);
-    }
-    Variables.memory_footprint=max_RAM_purchased*mem_sum;
-    Variables.cloud_provider=cloud_provider;
-    Variables.compression_name=compression_libraries[compression_style].compression_name;
-    Variables.FPR=getFPR(T, K, Z, L, Y, M, M_B, M_F, M_BF, N);
-    Variables.SLA_cost=SLA_cost;
-    Variables.M_F=M_F;
-    if ((existing_system == 'FASTER' || existing_system == 'FASTER_H') && total_IO == 0) {
-        Variables.total_cost = 0.1;
+    if (total_IO < best_IO || best_IO < 0) {
+        Variables.K = K;
+        Variables.T = T;
+        Variables.L = L;
+        Variables.Z = Z;
+        Variables.Y = Y;
+        Variables.Buffer = M_B;
+        Variables.M_BF = M_BF;
+        Variables.M_FP = M_FP;
+        Variables.read_cost = read_cost;
+        Variables.update_cost = update_cost;
+        Variables.rmw_cost = rmw_cost;
+        Variables.blind_update_cost = blind_update_cost;
+        Variables.short_scan_cost = short_scan_cost;
+        Variables.long_scan_cost = long_scan_cost;
+        Variables.no_result_read_cost = no_result_read_cost;
+        Variables.total_cost = total_IO;
+        Variables.latency = total_latency;
+        Variables.cost = (monthly_storage_cost + monthly_mem_cost).toFixed(3);
+        if (enable_SLA) {
+            Variables.cost = (monthly_storage_cost + monthly_mem_cost + SLA_cost).toFixed(3);
+        }
+        Variables.memory_footprint = max_RAM_purchased * mem_sum;
+        Variables.cloud_provider = cloud_provider;
+        Variables.compression_name = compression_libraries[compression_style].compression_name;
+        Variables.FPR = getFPR(T, K, Z, L, Y, M, M_B, M_F, M_BF, data);
+        Variables.SLA_cost = SLA_cost;
+        Variables.M_F = M_F;
+        if ((existing_system == 'FASTER' || existing_system == 'FASTER_H') && total_IO == 0) {
+            Variables.total_cost = 0.1;
+        }
     }
     //return  max_RAM_purchased;
     //console.log(Variables.latency);
@@ -999,7 +1008,6 @@ function buildContinuums(cloud_mode){
     for(var i=0;i<3;i++){
         dri_cache.push(new Array());
     }
-    console.log(cloud_mode);
     if(cloud_mode==0||cloud_mode==NaN) {
         for (var cloud_provider = 0; cloud_provider < 3; cloud_provider++) {
             if(cloud_provider_enable[cloud_provider]) {
@@ -1041,7 +1049,7 @@ function buildContinuums(cloud_mode){
                     var info = ("<b>" + VM_libraries[cloud_provider].provider_name + " :</b><br>T=" + Variables.T + ", K=" + Variables.K + ", Z=" + Variables.Z + ", L=" + Variables.L + "<br>M_B=" + (Variables.Buffer / 1024 / 1024 / 1024).toFixed(2) + " GB, M_BF=" + (Variables.M_BF / 1024 / 1024 / 1024).toFixed(2) + " GB<br>M_FP=" + (Variables.M_FP / 1024 / 1024 / 1024).toFixed(2) + " GB, " + Variables.VM_info + "<br>Latency=" + fixTime(Variables.latency) + "<br>Cost=" + Variables.cost);
                     if (using_compression)
                         info += "<br>Compression: " + Variables.compression_name;
-                    var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables, faster_Variables, fasterh_Variables];
+                    var result = [Variables.cost, Variables.total_cost, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables, faster_Variables, fasterh_Variables];
                     result_array.push(result);
                 }
             }
@@ -1056,12 +1064,11 @@ function buildContinuums(cloud_mode){
                 var rocks_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "rocks");
                 var WT_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "WT");
                 var info = ("<b>" + VM_libraries[cloud_provider].provider_name + " :</b><br>T=" + Variables.T + ", K=" + Variables.K + ", Z=" + Variables.Z + ", L=" + Variables.L + "<br>M_B=" + (Variables.Buffer / 1024 / 1024 / 1024).toFixed(2) + " GB, M_BF=" + (Variables.M_BF / 1024 / 1024 / 1024).toFixed(2) + " GB<br>M_FP=" + (Variables.M_FP / 1024 / 1024 / 1024).toFixed(2) + " GB, " + Variables.VM_info + "<br>Latency=" + fixTime(Variables.latency) + "<br>Cost=" + Variables.cost);
-                var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables];
+                var result = [Variables.cost, Variables.total_cost, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables];
                 result_array.push(result);
             }
         }
     }
-
     result_array.sort(function (a,b) {
         return a[0]-b[0];
     })
@@ -1154,20 +1161,20 @@ function aggregateAvgCaseUpdate( B, E, type, T, K, Z, L, Y, M_B, worst_case) {
     }
     else {
         term2 /= Q;
-        for(i = L - Y + 1; i <= L ;i++)
-        {
-            var num_blocks = ( (EB * Math.pow(T, i)))/ ( B);
-            term3_2 = EB * Math.pow(T, L-Y-1) >= num_blocks ? num_blocks : EB * Math.pow(T, L-Y-1);
-            term3 += term3_2;
+        if (Y >= 1){
+            term3_mult = 1.0;
+            if (T < B) {
+                term3_mult = T <= B-T? T : B - T;
+                term3_mult /=(B-T);
+            }
+            for(i = L - Y + 1; i <= L ;i++)
+            {
+                var num_blocks = ( (EB * Math.pow(T, i)))/ ( B);
+                term3_2 = EB * Math.pow(T, L-Y-1)*term3_mult >= num_blocks ? num_blocks : EB * Math.pow(T, L-Y-1)*term3_mult;
+                term3 += term3_2;
+            }
+            term3 /= Q;
         }
-        term3 /= Q;
-        term3_mult = 1.0;
-        if (T < B) {
-            term3_mult = T <= B-T ? T : B - T;
-            term3_mult += 1;
-            term3_mult /= ( (B - T));
-        }
-        term3 *= term3_mult;
     }
     //console.log(term1,term2,term3);
     // printf("term1:%f, term2:%f, term3:%f\n", term1, term2, term3);
@@ -1611,7 +1618,8 @@ function getAlpha_i(type, M_B, T, K, Z, L, Y, i, E)
     // cold levels
     if (i > 0 && i < L && i > L - Y -1) {
         size_run = M_B*Math.pow(T,i)/(E);
-        //size_run *= (B - T) / B;
+        // size_run *= (B - T) / (double)B; // USE THIS LIN IF YOU WANT INTERNAL NODES TO STORE DATA
+        size_run *= 0; // USE THIS LINE IF YOU DON'T WANT INTERNAL NODES TO STORE DATA
     }
 
     // get alpha
