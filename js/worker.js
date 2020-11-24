@@ -823,15 +823,13 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         var K = 1;
         var Z = 1;
         Y = 0;
-        M_FP = N * F / B;
+        M_FP = data * F / B;
         M_BF = data * 10.0 / 8.0; // 10 bits/entry in RocksDB is default and convert to byte because everything else is in byte
         M_F = M_FP + M_BF;
         if (M_F >= M) {
             //console.log("System "+existing_system+" needs at least"+((M_F/(1024*1024*1024))+1.0)+ " GB of memory\n", existing_system, ((M_F/(1024*1024*1024))+1.0));
-            rocks_not_passed++;
             return -1;
         }
-        rocks_passed++;
         //console.log("After return M_FP: "+M_FP+" M_BF: "+M_BF+" M_F: "+M_F+" M: "+M);
         M_BC=0;
         M_B = M - M_F;
