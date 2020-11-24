@@ -53,7 +53,7 @@ function re_run(e, if_regenerate=true) {
 function init(){
 
     // Dataset and Environment
-    document.getElementById("N").value=numberWithCommas(1000000000000); //(10M values)
+    document.getElementById("N").value=numberWithCommas(20000000000); //(10M values)
     document.getElementById("E").value=128;
     //document.getElementById("B").value=4096; //in B
     document.getElementById("F").value=64;
