@@ -2124,6 +2124,7 @@ function drawDesigns(best_array, cost) {
             l1=1;
             l2=-1;
         }else {
+            printBestArray(best_array);
             for (var i = 1; i < best_array.length; i++) {
                 if (best_array[i][0] >= cost||(best_array[i][1]*24<latency&&!isNaN(latency))) {
                     // console.log("best_array[i][0]: "+ best_array[i][0] + " i: "+i+" cost: "+cost+" bbest_array[i][1]: "+best_array[i][1]+" latency: "+latency+ " isnan: "+!isNaN(latency));
@@ -2308,6 +2309,14 @@ function drawDesigns(best_array, cost) {
     return chart_array;
 }
 
+function printBestArray(best_array) {
+    for (var i = 0; i < best_array.length; i++){
+        console.log("Cost: "+best_array[i][0] + " Total IO: "+best_array[i][1] + " VMCombination: "+best_array[i][2] +
+            + " Provider Name: "+best_array[i][3] + " Info: "+best_array[i][4] + " Memory footprint: " +best_array[i][5] +
+            + " Variables: " +best_array[i][6] +  " Rocks Variables: "+best_array[i][7] +  " WT Variables: " +best_array[i][8] +
+            + " Faster Variables: " +best_array[i][9] +  " fasterh Variables: " +best_array[i][10]);
+    }
+}
 
 function drawDiagram(Variables, id){
     var result_div=document.getElementById(id)

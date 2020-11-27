@@ -483,7 +483,6 @@ function switchText(id) {
 }
 
 function checkInput(input){
-    console.log(input.value);
     if(isNaN(parseFloat(input.value))){
         alert("Invalid input!");
         return false;

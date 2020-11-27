@@ -1,8 +1,5 @@
 
 console.log(cri_miss_count);
-var rocks_not_passed = 0;
-var rocks_passed = 0;
-var justThis = true;
 var input;
 var query_count = 10000000;
 var read_percentage = 50;
@@ -306,7 +303,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
         if(combination[i]>0){
             mem_sum=combination[i]*VM_libraries[cloud_provider].mem_of_instance[i];
             max_RAM_purchased=VM_libraries[cloud_provider].mem_of_instance[i];
-            monthly_mem_cost=mem_sum*VM_libraries[cloud_provider].rate_of_instance[i]*24*30;
+            monthly_mem_cost=combination[i]*VM_libraries[cloud_provider].rate_of_instance[i]*24*30;
             Variables.VM_info= (mem_sum+" X "+VM_libraries[cloud_provider].name_of_instance[i]);
             Variables.VM_instance= VM_libraries[cloud_provider].name_of_instance[i];
             Variables.VM_instance_num=mem_sum;
@@ -363,20 +360,6 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
             rmw_cost = read_cost + 1.0/B;
             blind_update_cost = read_cost + 1.0/B;
             total_IO = workload*(insert_percentage*update_cost + v*read_cost + r*no_result_read_cost + rmw_percentage*rmw_cost + blind_update_percentage*blind_update_cost);
-            if (justThis) {
-                console.log(workload+"Workload")
-                console.log(insert_percentage+"insert_percentage")
-                console.log(update_cost+"update_cost")
-                console.log(v+"read_cost")
-                console.log(r+"r")
-                console.log(no_result_read_cost+"no_result_read_cost")
-                console.log(rmw_percentage+"rmw_percentage")
-                console.log(rmw_cost+"rmw_cost")
-                console.log(blind_update_percentage+"blind_update_percentage")
-                console.log(blind_update_cost+"blind_update_cost")
-                console.log(total_IO);
-                justThis = false;
-            }
 
             var total_latency= total_IO / IOPS / 60 / 60 / 24; // Maybe divide this by 1024*1024*1024
 
@@ -541,7 +524,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
             no_result_read_cost = read_cost - 1;
             total_IO = workload * (update_cost * insert_percentage + read_cost * v + no_result_read_cost * r + rmw_cost * rmw_percentage + blind_update_cost * blind_update_percentage);
 
-            total_latency = total_IO / IOPS / 60 / 60 / 24; // Maybe divide this by 1024*1024*1024
+            total_latency = total_IO / IOPS / 60 / 60/ 24; // Maybe divide this by 1024*1024*1024
 
             if (L == 0)
                 total_latency = 0;
