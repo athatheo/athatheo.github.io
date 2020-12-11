@@ -1,5 +1,4 @@
 
-console.log(cri_miss_count);
 var input;
 var query_count = 10000000;
 var read_percentage = 50;
@@ -23,7 +22,7 @@ var RAM_BLOCK_COST;
 var IOPS;
 var network_bandwidth;
 
-var machines = 18;
+var machines = 30;
 var workload_type = 0;
 
 var time_unit;
@@ -38,12 +37,13 @@ var compression_libraries;
 var using_compression=false;
 
 var SLA_factors;
-var enable_SLA=true;
+var enable_SLA=false;
 var enable_DB_migration = true;
 var enable_dev_ops = true;
 var enable_backup = true;
 var enable_availability = false;
 var enable_durability = false;
+var enable_CLL = false;
 
 var cri_count=0;
 var cri_miss_count=0;
@@ -174,8 +174,6 @@ function initializeCompressionLibraries()
     compression_libraries[2].get_overhead = 25.45;
     compression_libraries[2].put_overhead = 31.26;
     compression_libraries[2].space_reduction_ratio = 0.83;
-
-    console.log(compression_libraries);
 }
 
 function initializeSLAFactors()
@@ -335,6 +333,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     var M_B_percent = 20;
     var M = max_RAM_purchased*1024*1024*1024;
     var workload = max_RAM_purchased*query_count/mem_sum;
+
     while(M_B_percent < 100) {
         M_B = M_B_percent*M/100;
         M_FP = M - M_B;
@@ -427,14 +426,15 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                         }
                         var temp = getY(M_FP, M_F, M_F_HI, M_F_LO, X, T, L, data, F, B);
                         Y = temp.Y;
-                        M_F = temp.M_FP;
+                        M_FP = temp.M_FP;
 
-                        if (Y == 0 && C!= -1) {
+                        if (Y == 0 && enable_CLL && C!= -1) {
                             L = getNoOfLevelsWacky(M_B, T, data, C, E);
                         } else {
                             break_from_loop = true;
                         }
 
+                        M_BF = getM_BF(M_F, M_FP);
                         if(scenario=='A'){
                             update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B);
                             read_cost = analyzeReadCostAvgCase(FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data, E, Math.ceil(M_B), Math.ceil(E), compression_style);
@@ -454,7 +454,6 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
 
                         if(L==0)
                             total_latency=0;
-
                         if (total_IO < best_IO || best_IO < 0) {
                             best_IO = total_IO;
                             Variables.K = K;
@@ -580,12 +579,23 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
 
 function getM_F_LO(M_B, M, T, data, B, E, F){
     var M_F_LO;
-    if (data/B < M/B*T/(B*E)) {
+    if (data/B < M_B*T/(B*E)) {
         M_F_LO = data/B*F;
     } else {
         M_F_LO = M_B*F*T/(B*E);
     }
     return M_F_LO;
+}
+
+function getM_BF(M_F, M_FP){
+    var MARGIN = 2;
+    var M_BF = 0;
+    if ((M_F - M_FP) > 0){
+        M_BF = M_F - M_FP - MARGIN;
+    } else {
+        M_BF = 0;
+    }
+    return M_BF;
 }
 
 function set_M_F(M_F, M_B, M, M_F_HI, M_F_LO) {
@@ -1030,7 +1040,7 @@ function buildContinuums(cloud_mode){
                     var info = ("<b>" + VM_libraries[cloud_provider].provider_name + " :</b><br>T=" + Variables.T + ", K=" + Variables.K + ", Z=" + Variables.Z + ", L=" + Variables.L + "<br>M_B=" + (Variables.Buffer / 1024 / 1024 / 1024).toFixed(2) + " GB, M_BF=" + (Variables.M_BF / 1024 / 1024 / 1024).toFixed(2) + " GB<br>M_FP=" + (Variables.M_FP / 1024 / 1024 / 1024).toFixed(2) + " GB, " + Variables.VM_info + "<br>Latency=" + fixTime(Variables.latency) + "<br>Cost=" + Variables.cost);
                     if (using_compression)
                         info += "<br>Compression: " + Variables.compression_name;
-                    var result = [Variables.cost, Variables.total_cost, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables, faster_Variables, fasterh_Variables];
+                    var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables, faster_Variables, fasterh_Variables];
                     result_array.push(result);
                 }
             }
@@ -1045,7 +1055,7 @@ function buildContinuums(cloud_mode){
                 var rocks_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "rocks");
                 var WT_Variables = navigateDesignSpaceForExistingDesign(VMCombination, cloud_provider, "WT");
                 var info = ("<b>" + VM_libraries[cloud_provider].provider_name + " :</b><br>T=" + Variables.T + ", K=" + Variables.K + ", Z=" + Variables.Z + ", L=" + Variables.L + "<br>M_B=" + (Variables.Buffer / 1024 / 1024 / 1024).toFixed(2) + " GB, M_BF=" + (Variables.M_BF / 1024 / 1024 / 1024).toFixed(2) + " GB<br>M_FP=" + (Variables.M_FP / 1024 / 1024 / 1024).toFixed(2) + " GB, " + Variables.VM_info + "<br>Latency=" + fixTime(Variables.latency) + "<br>Cost=" + Variables.cost);
-                var result = [Variables.cost, Variables.total_cost, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables];
+                var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables];
                 result_array.push(result);
             }
         }
@@ -1053,10 +1063,129 @@ function buildContinuums(cloud_mode){
     result_array.sort(function (a,b) {
         return a[0]-b[0];
     })
-    var log=result_array;
-    for(var i=0;i<10;i++)
-        //console.log(log[i]);
-        return result_array;
+    result_array = correctContinuum(result_array);
+    return result_array;
+}
+
+// To create the triple point per cost as the C code.
+function correctContinuum(result_array) {
+    var provider, cost, latency, bestAWS, bestGCP, bestAzure, temp;
+    var result_array_with_new_points = new Array();
+    result_array = correctContinuumForEachProvider(result_array);
+    for (var i = 0; i < result_array.length; i++) {
+        provider = result_array[i][3];
+        latency = result_array[i][1];
+        cost = result_array[i][0];
+        if (provider == "AWS") {
+            if (bestAWS == null){
+                bestAWS = [...result_array[i]];
+            } else if (latency < bestAWS[1]) {
+                bestAWS = [...result_array[i]];
+            }
+            if (bestGCP!=null) {
+                temp = [...bestGCP];
+                temp[0] = cost;
+                result_array_with_new_points.push(temp);
+            }
+            if (bestAzure!=null) {
+                temp = [...bestAzure];
+                temp[0] = cost;
+                result_array_with_new_points.push(temp);
+            }
+        } else if (provider == "GCP") {
+            if (bestGCP == null){
+                bestGCP = [...result_array[i]];
+            } else if (latency < bestGCP[1]) {
+                bestGCP = [...result_array[i]];
+            }
+            if (bestAWS!=null) {
+                temp = [...bestAWS];
+                temp[0] = cost;
+                result_array_with_new_points.push(temp);
+            }
+            if (bestAzure!=null) {
+                temp = [...bestAzure];
+                temp[0] = cost;
+                result_array_with_new_points.push(temp);
+            }
+        } else {
+            if (bestAzure == null){
+                bestAzure = [...result_array[i]];
+            } else if (latency < bestAzure[1]) {
+                bestAzure = [...result_array[i]];
+            }
+            if (bestAWS!=null) {
+                temp = [...bestAWS];
+                temp[0] = cost;
+                result_array_with_new_points.push(temp);
+            }
+            if (bestGCP!=null) {
+                temp = [...bestGCP];
+                temp[0] = cost;
+                result_array_with_new_points.push(temp);
+            }
+        }
+    }
+    var final_array = result_array.concat(result_array_with_new_points);
+    final_array.sort(function (a,b) {
+        return a[0]-b[0];
+    })
+    return final_array;
+}
+
+function correctContinuumForEachProvider(array) {
+    var bestAWS, bestGCP, bestAzure, latency, provider, cost;
+    for (var i = 0; i < array.length; i++) {
+        provider = array[i][3];
+        latency = array[i][1];
+        cost = array[i][0];
+        if(provider == "AWS") {
+            if(bestAWS == null) {
+                bestAWS = [...array[i]];
+            } else if(latency > bestAWS[1]) {
+                cost = array[i][0];
+                array[i] = [...bestAWS];
+                array[i][0] = cost;
+            } else {
+                bestAWS = [...array[i]];
+            }
+        } else if(provider == "GCP") {
+            if(bestGCP == null) {
+                bestGCP = [...array[i]];
+            } else if(latency > bestGCP[1]) {
+                cost = array[i][0];
+                array[i] = [...bestGCP];
+                array[i][0] = cost;
+            } else {
+                bestGCP = [...array[i]];
+            }
+        } else {
+            if(bestAzure == null) {
+                bestAzure = [...array[i]];
+            } else if(latency > bestAzure[1]) {
+                cost = array[i][0];
+                array[i] = [...bestAzure];
+                array[i][0] = cost;
+            } else {
+                bestAzure = [...array[i]];
+            }
+        }
+    }
+    array = removeRedundantConfigurations(array);
+    return array;
+}
+
+function removeRedundantConfigurations(array) {
+    var cleanedArray = new Array();
+    var last_cost, current_cost;
+    for (var i = 0; i < array.length; i++) {
+        current_cost = array[i][0];
+        if (!(current_cost == last_cost)) {
+            cleanedArray.push(array[i]);
+            last_cost = current_cost;
+        }
+    }
+    return cleanedArray;
 }
 
 function fixTime(time){
@@ -1852,7 +1981,6 @@ function getStorageCost(Variables, cloud_provider)
             monthly_storage_cost = 259.05;
         }
     }
-
     //console.log(cloud_provider+"====="+total_budget)
     return [B,monthly_storage_cost];
 }
@@ -2076,7 +2204,6 @@ function getBestDesignArray(result_array) {
 
 
 onmessage = function(e) {
-    console.log(e);
     input=e.data.input;
     initializeCompressionLibraries();
     initializeSLAFactors();
@@ -2093,6 +2220,5 @@ onmessage = function(e) {
     cloud_provider_enable=e.data.SLA.cloud_provider_enable;
     var result=buildContinuums(e.data.cloud_provider);
     console.log('Message received from main script');
-    console.log(result);
     postMessage(result);
 }

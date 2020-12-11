@@ -53,7 +53,7 @@ function re_run(e, if_regenerate=true) {
 function init(){
 
     // Dataset and Environment
-    document.getElementById("N").value=numberWithCommas(20000000000); //(10M values)
+    document.getElementById("N").value=numberWithCommas(100000000000); //(10M values)
     document.getElementById("E").value=128;
     //document.getElementById("B").value=4096; //in B
     document.getElementById("F").value=64;
@@ -1069,7 +1069,6 @@ function initializeExistDesignPanel() {
 
 function reverseColor() {
     if(document.getElementById("title").style.backgroundColor=="white"){
-        console.log(document.getElementById("title").style.backgroundColor)
         document.getElementById("title").style.backgroundColor="#222222";
         document.getElementById("title").style.color="white";
         clearInterval(interval)

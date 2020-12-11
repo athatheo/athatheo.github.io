@@ -854,6 +854,589 @@ function drawContinuums(if_regenerate=true) {
             l2=-1;
         }else {
             for (var i = 1; i < best_array.length; i++) {
+                if (best_array[i][0] >= cost||(best_array[i][1]*24<latency&&!isNaN(latency))) {
+                    //drawDiagram(best_array[i-1][5], 'cost_result_diagram1');
+                    //drawDiagram(best_array[i][5], 'cost_result_diagram2');
+                    design_1_index = i - 1;
+                    design_2_index = i;
+                    if(!isNaN(latency)) {
+                        if (best_array[i][1] * 24 < latency)
+                            cost_result_text[0] = ("<i>We found 2 storage engine designs for you at $" + cost + " with latency less than " + fixTime(latency / 24) + ".</i><br><br>");
+                        else {
+                            for (var j = 1; j < best_array.length; j++) {
+                                if (best_array[j][1]*24 < latency){
+                                    design_2_index=j;
+                                    break;
+                                }
+                            }
+                            cost_result_text[0] = ("<i>The budget $" + cost + " is too low to achieve " + fixTime(latency / 24) + " latency. However, we found the following two storage engines for you.</i><br><br>");
+                        }
+                    }else{
+                        cost_result_text[0] = ("<i>We found 2 storage engine designs for you at $" + cost + ".</i><br><br>");
+                    }
+                    cost_result_text[1] = "<b>Configuration 1 saves money</b>"
+                    cost_result_text[2] = best_array[i - 1][5];
+                    cost_result_text[3] = "<b>Configuration 2 saves time</b>";
+                    cost_result_text[4] = best_array[design_2_index][5];
+                    chart_start_index = Math.floor(i - best_array.length / 5);
+                    if (chart_start_index < 0)
+                        chart_start_index = 0;
+                    chart_end_index = Math.ceil(i + best_array.length / 5);
+                    if (chart_end_index > best_array.length - 1)
+                        chart_end_index = best_array.length - 1;
+
+                    if (cost_result_text[2].memory_footprint / cost_result_text[2].VM_instance_num > cost_result_text[4].memory_footprint / cost_result_text[4].VM_instance_num) {
+                        //max_mem=cost_result_text[2].memory_footprint/cost_result_text[2].VM_instance_num;
+                        l1 = 1;
+                        l2 = (cost_result_text[4].memory_footprint / cost_result_text[4].VM_instance_num) / (cost_result_text[2].memory_footprint / cost_result_text[2].VM_instance_num);
+                    } else {
+                        //max_mem=cost_result_text[4].memory_footprint/cost_result_text[4].VM_instance_num;
+                        l2 = 1;
+                        l1 = (cost_result_text[2].memory_footprint / cost_result_text[2].VM_instance_num) / (cost_result_text[4].memory_footprint / cost_result_text[4].VM_instance_num);
+                    }
+
+                    if ((cost - best_array[i - 1][0]) > (best_array[i][0] - cost))
+                        switch_option = true;
+                    break;
+                }/* else if (best_array[i][0] == cost) {
+                    design_1_index = i;
+                    cost_result_text[0] = ("We found the key-value stores for you at $" + cost + ".<br><br>");
+                    //drawDiagram(best_array[best_array.length-1][5], 'cost_result_diagram1');
+                    cost_result_text[1] = "<b>Our Option:</b>"
+                    cost_result_text[2] = best_array[i][5];
+                    chart_start_index = Math.floor(best_array.length * 4 / 5);
+                    chart_end_index = best_array.length - 1;
+                    l1 = 1;
+                    l2 = -1;
+                    break;
+                }*/
+            }
+        }
+            document.getElementById("cost_result_p1").innerHTML=cost_result_text[0];
+
+            document.getElementById("cost_result_p2").innerHTML= cost_result_text[1];
+            outputParameters(cost_result_text[2],"cost_result_p3", l1);
+
+            if(l2!=-1) {
+                //if(switch_option==true){
+                if(document.getElementById('performance_conscious_checkbox').checked){
+                    document.getElementById("cost_result_p4").innerHTML= "<b>Configuration 2 saves money</b>";
+                    outputParameters(cost_result_text[2],"cost_result_p5", l1);
+                    document.getElementById("cost_result_p2").innerHTML = "<b>Configuration 1 saves time</b>";
+                    outputParameters(cost_result_text[4], "cost_result_p3", l2);
+                }else {
+                    document.getElementById("cost_result_p4").innerHTML = cost_result_text[3];
+                    outputParameters(cost_result_text[4], "cost_result_p5", l2);
+                }
+            }else{
+                removeAllChildren(document.getElementById("cost_result_p4"));
+                removeAllChildren(document.getElementById("cost_result_p5"));
+            }
+
+            if( cost_result_text[0] != "Cost is too little"){
+
+                //document.getElementById("cost_result_p6").setAttribute("style","position:relative;top:0px");
+                if(best_array[design_1_index][7]!=-1) {
+                    document.getElementById("cost_result_p6").innerHTML = "<b>RocksDB</b>";
+                    if((cost-best_array[design_1_index][7].cost)>(best_array[design_1_index+1][7].cost-cost)) {
+                        outputParameters(best_array[design_1_index+1][7], "cost_result_p7", l2);
+                        outputNote(best_array[design_1_index][7], "cost_result_p7");
+                    }else{
+                        outputParameters(best_array[design_1_index][7], "cost_result_p7", l1);
+                        outputNote(best_array[design_1_index+1][7], "cost_result_p7");
+                    }
+                }else{
+                    document.getElementById("cost_result_p6").innerHTML = "<b>RocksDB: Not Enough Memory</b>";
+                    removeAllChildren(document.getElementById("cost_result_p7"));
+                }
+                if(best_array[design_1_index][8]!=-1) {
+                    document.getElementById("cost_result_p8").innerHTML = "<b>WiredTiger</b>";
+                    //console.log(best_array[design_1_index][8])
+                    if((cost-best_array[design_1_index][8].cost)>(best_array[design_1_index+1][8].cost-cost)) {
+                        outputParameters(best_array[design_1_index+1][8], "cost_result_p9", l2);
+                        outputNote(best_array[design_1_index][8], "cost_result_p9");
+                    }else{
+                        outputParameters(best_array[design_1_index][8], "cost_result_p9", l1);
+                        outputNote(best_array[design_1_index+1][8], "cost_result_p9");
+                    }
+                }else{
+                    document.getElementById("cost_result_p8").innerHTML = "<b>WiredTiger: Not Enough Memory</b>";
+                    removeAllChildren(document.getElementById("cost_result_p9"));
+                }
+            }
+    }
+    global_index=design_1_index;
+    console.log(best_array,chart_start_index,chart_end_index);
+    var chart_array=cutArray(best_array,chart_start_index,chart_end_index);
+
+
+
+/*
+    var layout =
+        {
+            xaxis: {
+                title: 'Cost ($/month)',
+                //range: [ best_array[chart_start_index][0], best_array[chart_end_index][0] ],
+                showline: true,
+                zeroline: false
+            },
+            yaxis: {
+                title: 'Latency (day)',
+                //range: [ best_array[chart_end_index][1], best_array[chart_start_index][1] ],
+                showline: true,
+                zeroline: false
+            },
+            legend: {
+                "orientation": "h",
+                x: 0.1,
+                y: 1
+            },
+            autosize: true,
+            hovermode: "closest",
+            width: 375,
+            height: 300,
+            margin: {
+                l: 60,
+                r: 20,
+                b: 50,
+                t: 20,
+                pad: 5
+            }, title: ''
+        };
+
+    var layout_ad =
+        {
+            xaxis: {
+                title: 'Latency (day)',
+                autorange: true
+            },
+            yaxis: {
+                title: 'Cost ($/month)',
+                range: [ 0, cost*2+100 ]
+            },
+            legend: {
+                "orientation": "h",
+                x: 0.66,
+                y: 1
+            },
+            autosize: true,
+            hovermode: "closest",
+            width: 375,
+            height: 500,
+            margin: {
+                l: 60,
+                r: 20,
+                b: 50,
+                t: 20,
+                pad: 5
+            }, title: ''
+        };
+    //Plotly.newPlot('tester5', data_ad, layout_ad);
+    //Plotly.newPlot('tester', data_ever, layout);
+    //Plotly.newPlot('tester', data_compare, layout);
+
+    //Plotly.newPlot('tester3', data3, layout_ad);
+    layout.width=375;
+    layout_ad.width=375;
+    //layout.title="Sub-space of configurations tailored to your inputs";
+    Plotly.newPlot('tester6', data_ever, layout);
+    layout.yaxis.title="Throughput/Cost ";
+    layout.width=750;
+    //Plotly.newPlot('tester', data_compare, layout);
+    layout.yaxis.title="Throughput per buck ";
+    //Plotly.newPlot('tester3', data_gradient, layout);
+
+
+*/
+
+
+
+
+    $("#chart_style").change(function(){
+        var chart;
+        if(this.value=='1'){
+            chart=initChart(chart_array,0,1,"Cost ($/month)","Latency ", 0, cost);
+            provider_num_array=chart.provider_num_array;
+            Plotly.newPlot('tester6', chart.data, chart.layout);
+        }
+        if(this.value=='2'){
+            chart=initChart(chart_array,1,0,"Latency ","Cost ($/month)", 0, cost);
+            provider_num_array=chart.provider_num_array;
+            Plotly.newPlot('tester6', chart.data, chart.layout);
+        }
+        if(this.value=='3'){
+            chart=initChart(chart_array,0,6,"Cost ($/month)","Memory (GB)", 1, cost);
+            provider_num_array=chart.provider_num_array;
+            Plotly.newPlot('tester6', chart.data, chart.layout);
+        }
+
+        var myPlot = document.getElementById('tester6');
+        myPlot.on('plotly_hover', function(data){
+            var hoverInfo = document.getElementById('hoverinfo6');
+            hoverInfo.innerHTML=(data.points[0].text);
+            //console.log(data);
+            //hoverInfo.innerHTML = infotext.join('<br/>');
+            for(var i in ContinuumArray){
+                if(data.points[0].text==ContinuumArray[i][4]) {
+                    var result_div=document.getElementById("continuums_bar");
+                    addTextAndBar(result_div, ContinuumArray[i][5],80,12);
+                    drawDiagram(ContinuumArray[i][5], "diagram6");
+                }
+            }
+        })
+
+        $("#diagram6").html("<div style=\"font-size:18px;text-align: center;position: relative;top: 64px;\">Hover along the continuum to learn more.</span>");
+        $("#hoverinfo6").html("");
+        $("#continuums_bar").html("");
+        $("#tester6").hover(function(){
+        }, function() {
+            $("#hoverinfo6").html("");
+            $("#continuums_bar").html("");
+            $("#diagram6").html("<div style=\"font-size:18px;text-align: center;position: relative;top: 64px;\">Hover along the continuum to learn more.</span>");
+            //$("#hoverinfo6").html("Out of top 10% designs,<br>"+(provider_num_array[0]*100/ContinuumArray.length).toFixed(2)+"% are of AWS,<br>"+(provider_num_array[1]*100/ContinuumArray.length).toFixed(2)+"% are of GCP,<br>and "+(provider_num_array[2]*100/ContinuumArray.length).toFixed(2)+"% are of AZURE.");
+        });
+    });
+
+
+    chart=initChart(chart_array,0,1,"Cost ($/month)","Latency ", 0, cost);
+    provider_num_array=chart.provider_num_array;
+    Plotly.newPlot('tester6', chart.data, chart.layout);
+    var myPlot = document.getElementById('tester6');
+    myPlot.on('plotly_hover', function(data){
+        var hoverInfo = document.getElementById('hoverinfo6');
+        hoverInfo.innerHTML=(data.points[0].text);
+        //console.log(data);
+        //hoverInfo.innerHTML = infotext.join('<br/>');
+        for(var i in ContinuumArray){
+            if(data.points[0].text==ContinuumArray[i][4]) {
+                var result_div=document.getElementById("continuums_bar");
+                addTextAndBar(result_div, ContinuumArray[i][5],80,12);
+                drawDiagram(ContinuumArray[i][5], "diagram6");
+            }
+        }
+    })
+
+
+    $("#tester6").hover(function(){
+    }, function() {
+        $("#hoverinfo6").html("");
+        $("#continuums_bar").html("");
+        $("#diagram6").html("<div style=\"font-size:18px;text-align: center;position: relative;top: 64px;\">Hover along the continuum to learn more.</span>");
+    });
+
+    $(document).ready(function(){
+        $("#diagram6").html("<div style=\"font-size:18px;text-align: center;position: relative;top: 64px;\">Hover along the continuum to learn more.</span>");
+        //$("#diagram6").html("Out of top 10% designs,<br>"+(provider_num_array[0]*100/ContinuumArray.length).toFixed(2)+"% are of AWS,<br>"+(provider_num_array[1]*100/ContinuumArray.length).toFixed(2)+"% are of GCP,<br>and "+(provider_num_array[2]*100/ContinuumArray.length).toFixed(2)+"% are of AZURE.");
+    });
+
+    console.log(cri_count);
+    console.log(cri_cache);
+    console.log(cri_cache.size);
+    console.log(cri_miss_count);
+    console.log(dri_count);
+    console.log(dri_miss_count);
+    console.log(log);
+
+}
+function drawContinuums(if_regenerate=true) {
+
+    var provider_num_array=[0,0,0];
+    var provider_num_array_ad=[0,0,0];
+
+    var legend_array=new Array();
+    for(var i=0; i<3; i++){
+        legend_array[i]={x: [null],
+            y: [null],
+            marker: { size: 7, symbol: 'circle', color: "crimson"},
+            showlegend: true,
+            mode: 'markers',
+            name: "red",
+            type: 'scatter'
+        };
+        legend_array[i].marker.color=colors[i];
+        legend_array[i].name=cloud_array[i];
+    }
+
+   document.getElementById("chart_style").value="1";
+
+
+    var cost=parseInt(document.getElementById("cost").value.replace(/\D/g,''), 10);
+    var latency=parseFloat(document.getElementById("latency").value);
+
+    var cloud_provider=document.getElementById("cloud-provider").selectedIndex;
+
+    if(if_regenerate) {
+        var ContinuumArray = buildContinuums(cloud_provider);
+    }
+    else {
+        var ContinuumArray = global_continuums_array;
+        ContinuumArray.sort(function (a,b) {return a[0]-b[0];});
+        console.log("not generate");
+    }
+    global_continuums_array=ContinuumArray;
+
+    var best_array=ContinuumArray;
+    var latency_array=new Array();
+    var cost_array=new Array();
+    var info_array=new Array();
+    for(var i=0;i<best_array.length;i++){
+        cost_array.push(best_array[i][0]);
+        latency_array.push(best_array[i][1]);
+        info_array.push(best_array[i][4]);
+        if(i<best_array.length/10){
+            for(var j=0;j<3;j++){
+                if(best_array[i][3]==cloud_array[j]) {
+                    provider_num_array_ad[j]++;
+                }
+            }
+        }
+    }
+
+    var data=[{
+        x: cost_array,
+        y: latency_array,
+        //marker: { size: 7, symbol: 'circle', color: 'steelblue'},
+        //mode: 'markers',
+        showlegend: false,
+        text: info_array,
+        //line: {width: 2, color:'lightblue'},
+        hovertemplate:
+            "<b>%{text}</b><br><br>",
+        type: 'scatter'
+    }];
+
+    best_array=getBestDesignEverArray(ContinuumArray);
+/*
+    latency_array=new Array();
+    cost_array=new Array();
+    info_array=new Array();
+    var name_array=new Array();
+    var color_array=new Array();
+    var rocks_array=new Array();
+    var throughput_array=new Array();
+    var CP_array=new Array();
+    var gradient_array=new Array();
+    gradient_array.push(undefined);
+    for(var i=0;i<best_array.length;i++){
+        cost_array.push(best_array[i][0]);
+        latency_array.push(best_array[i][1]);
+        info_array.push(best_array[i][4]);
+        name_array.push(best_array[i][3]);
+        throughput_array.push(best_array[i][5].throughput);
+        CP_array.push(best_array[i][5].throughput/best_array[i][0]);
+        if(i>0)
+            gradient_array.push((best_array[i][5].throughput-best_array[i-1][5].throughput)/(best_array[i][0]-best_array[i-1][0]))
+        if(best_array[i][7].latency!=undefined)
+            rocks_array.push(best_array[i][7].latency-best_array[i][1])
+        else
+            rocks_array.push(undefined);
+        //rocks_array.push(best_array[i][7].latency);
+
+        for(var j=0;j<3;j++){
+            if(best_array[i][3]==cloud_array[j]) {
+                color_array.push(colors[j]);
+            }
+        }
+    }
+
+    var data_ever=[{
+        x: cost_array,
+        y: latency_array,
+        marker: { size: 7, symbol: 'circle', color: color_array},
+        mode: 'lines+markers',
+        showlegend: false,
+        text: info_array,
+        hovertext: name_array,
+        line: {color: 'grey', width: 2},
+        hovertemplate:
+            "<b>%{hovertext}</b><extra></extra>",
+        type: 'scatter'
+    },legend_array[0],legend_array[1],legend_array[2]];
+
+    var result_array_ad=ContinuumArray;
+    result_array_ad.sort(function (a,b) {return a[1]-b[1];});
+    var latency_array_ad=new Array();
+    var cost_array_ad=new Array();
+    var info_array_ad=new Array();
+    for(var i=0;i<result_array_ad.length;i++){
+        cost_array_ad.push(result_array_ad[i][0]);
+        latency_array_ad.push(result_array_ad[i][1]);
+        info_array_ad.push(result_array_ad[i][4]);
+        if(i<result_array_ad.length/10){
+            for(var j=0;j<3;j++){
+                if(result_array_ad[i][3]==cloud_array[j]) {
+                    provider_num_array[j]++;
+                }
+            }
+        }
+    }
+
+    var data_ad=[{
+        x: latency_array_ad,
+        y: cost_array_ad,
+        //marker: { size: 7, symbol: 'circle', color: 'steelblue'},
+        //mode: 'markers',
+        text: info_array_ad,
+        hovertemplate:
+            "<b>%{text}</b><extra></extra>",
+        type: 'scatter'
+    }];
+
+
+
+    var result_array=ContinuumArray;
+
+    var graph_array=new Array();
+    for(var i=0;i<3;i++)
+        graph_array.push([new Array(),new Array(),new Array()]);
+    for(var i=0;i<result_array.length;i++){
+        var cloud_provider;
+        if(result_array[i][3]=='AWS')
+            cloud_provider=0;
+        if(result_array[i][3]=='GCP')
+            cloud_provider=1;
+        if(result_array[i][3]=='AZURE')
+            cloud_provider=2;
+
+        graph_array[cloud_provider][0].push(result_array[i][0]);
+        graph_array[cloud_provider][1].push(result_array[i][1]);
+        graph_array[cloud_provider][2].push(result_array[i][4]);
+    }
+
+    var graph_array_ad=new Array();
+    for(var i=0;i<3;i++)
+        graph_array_ad.push([new Array(),new Array(),new Array()]);
+    for(var i=0;i<result_array.length;i++){
+        var cloud_provider;
+        if(result_array_ad[i][3]=='AWS')
+            cloud_provider=0;
+        if(result_array_ad[i][3]=='GCP')
+            cloud_provider=1;
+        if(result_array_ad[i][3]=='AZURE')
+            cloud_provider=2;
+
+        graph_array_ad[cloud_provider][0].push(result_array_ad[i][0]);
+        graph_array_ad[cloud_provider][1].push(result_array_ad[i][1]);
+        graph_array_ad[cloud_provider][2].push(result_array_ad[i][4]);
+    }
+
+
+
+    var data2=new Array();
+    var data3=new Array();
+
+    for(var i=0;i<3;i++){
+        var Point={
+            x: graph_array[i][0],
+            y: graph_array[i][1],
+            marker: { size: 4, symbol: 'circle', color: colors[i]},
+            name: cloud_array[i],
+            //mode: 'markers',
+            text: graph_array[i][2],
+            hovertemplate:
+                "<b>%{text}</b><br><br>",
+            mode: 'markers',
+            type: 'scatter'
+        }
+        data2.push(Point);
+    }
+
+    for(var i=0;i<3;i++){
+        var Point={
+            x: graph_array_ad[i][1],
+            y: graph_array_ad[i][0],
+            marker: { size: 4, symbol: 'circle', color: colors[i]},
+            name: cloud_array[i],
+            //mode: 'markers',
+            text: graph_array_ad[i][2],
+            hovertemplate:
+                "<b>%{text}</b><br><br>",
+            mode: 'markers',
+            type: 'scatter'
+        }
+        data3.push(Point);
+    }
+
+    var result_array_ad_ever=new Array();
+    var best_cost=-1;
+    for(var i=0;i<result_array_ad.length;i++){
+        if(best_cost==-1||(best_cost-result_array_ad[i][0])>0){
+            best_cost=result_array_ad[i][0];
+            result_array_ad_ever.push(result_array_ad[i]);
+        }
+    }
+
+    latency_array_ad=new Array();
+    cost_array_ad=new Array();
+    info_array_ad=new Array();
+    name_array=new Array();
+    var color_array_ad=new Array();
+    for(var i=0;i<result_array_ad_ever.length;i++){
+        cost_array_ad.push(result_array_ad_ever[i][0]);
+        latency_array_ad.push(result_array_ad_ever[i][1]);
+        info_array_ad.push(result_array_ad_ever[i][4]);
+        name_array.push(result_array_ad_ever[i][3])
+        for(var j=0;j<3;j++){
+            if(result_array_ad_ever[i][3]==cloud_array[j])
+                color_array_ad.push(colors[j]);
+        }
+    }
+
+
+
+    var data_ad_ever=[{
+        x: latency_array_ad,
+        y: cost_array_ad,
+        marker: { size: 7, symbol: 'circle', color: color_array_ad},
+        mode: 'lines+markers',
+        text: info_array_ad,
+        line: {color: 'grey', width: 2},
+        showlegend: false,
+        hovertext: name_array,
+        hovertemplate:
+            "<b>%{hovertext}</b><extra></extra>",
+        type: 'scatter'
+    },legend_array[0],legend_array[1],legend_array[2]];
+*/
+
+    console.log(best_array);
+    var cost_result_text=new Array();
+    var chart_start_index;
+    var chart_end_index;
+    var l1,l2;
+    var design_1_index;
+    var design_2_index;
+    var max_mem;
+    var switch_option;
+    if(cost<best_array[0][0]) {
+        cost_result_text[0] = "Sorry, you have insufficient budget. The minimum budget to run the workload is $"+best_array[0][0]+".<br>";
+        chart_start_index=0;
+        chart_end_index=Math.ceil(best_array/5);
+        removeAllChildren(document.getElementById("cost_result_p2"));
+        removeAllChildren(document.getElementById("cost_result_p3"));
+        removeAllChildren(document.getElementById("cost_result_p4"));
+        removeAllChildren(document.getElementById("cost_result_p5"));
+        removeAllChildren(document.getElementById("cost_result_p6"));
+        removeAllChildren(document.getElementById("cost_result_p7"));
+        removeAllChildren(document.getElementById("cost_result_p8"));
+        removeAllChildren(document.getElementById("cost_result_p9"));
+        document.getElementById("cost_result_p1").innerHTML=cost_result_text[0];
+    }
+    else{
+
+        if(best_array[best_array.length-1][0]<cost) {
+            design_1_index=best_array.length-1;
+            cost_result_text[0]=("We found 1 storage engine design for you at "+cost+".<br><br>");
+            console.log(cost_result_text[0],cost);
+            //drawDiagram(best_array[best_array.length-1][5], 'cost_result_diagram1');
+            cost_result_text[1]="<b>Our Option:</b>"
+            cost_result_text[2] = best_array[best_array.length - 1][5];
+            chart_start_index=Math.floor(best_array.length*4/5);
+            chart_end_index=best_array.length-1;
+            l1=1;
+            l2=-1;
+        }else {
+            for (var i = 1; i < best_array.length; i++) {
                 console.log(latency);
                 if (best_array[i][0] >= cost||(best_array[i][1]*24<latency&&!isNaN(latency))) {
                     //drawDiagram(best_array[i-1][5], 'cost_result_diagram1');
@@ -1232,7 +1815,6 @@ function drawContinuumsMultithread(if_regenerate=true) {
                 if (typeof e.data == "string") {
                     $("#loading_percentage").html(e.data);
                 } else {
-                    console.log(typeof e.data);
                     var ContinuumArray = e.data;
                     global_continuums_array = ContinuumArray;
                     drawContinuumsNew(ContinuumArray);
@@ -1546,8 +2128,6 @@ function drawContinuumsNew(ContinuumArray){
 
     */
 
-    //console.log(best_array);
-
     var chart_array=drawDesigns(best_array,cost);
 
 
@@ -1813,7 +2393,6 @@ function drawStats() {
         },
         hovermode: false
     }
-
     var result_array = global_continuums_array;
     var input=parseFloat(document.getElementById("stat_input_1").value);
     var cheapestNum=parseInt(document.getElementById("stat_input_2").value);
@@ -1888,7 +2467,6 @@ function drawStats() {
         width_array_5.push(0.2);
     }
 
-
     var budget_array_6=new Array();
     var latency_array_6=new Array();
     var color_array_6=new Array();
@@ -1908,7 +2486,6 @@ function drawStats() {
     var query_IO = [best_array[global_index][5].read_cost, best_array[global_index][5].update_cost];
 
     var improvement_array=new Array();
-    console.log(best_array[global_index]);
     for(var i=0;i<4;i++) {
         improvement_array.push((best_array[global_index][7+i].latency-best_array[global_index][1])/(best_array[global_index][7+i].latency)*100);
     }
@@ -2311,10 +2888,11 @@ function drawDesigns(best_array, cost) {
 
 function printBestArray(best_array) {
     for (var i = 0; i < best_array.length; i++){
-        console.log("Cost: "+best_array[i][0] + " Total IO: "+best_array[i][1] + " VMCombination: "+best_array[i][2] +
-            + " Provider Name: "+best_array[i][3] + " Info: "+best_array[i][4] + " Memory footprint: " +best_array[i][5] +
-            + " Variables: " +best_array[i][6] +  " Rocks Variables: "+best_array[i][7] +  " WT Variables: " +best_array[i][8] +
-            + " Faster Variables: " +best_array[i][9] +  " fasterh Variables: " +best_array[i][10]);
+        console.log("Cost: "+best_array[i][0] + " latency: "+best_array[i][1] + " Provider Name: "+best_array[i][3]);
+        // + " VMCombination: "+best_array[i][2] +
+        //     + " Provider Name: "+best_array[i][3] + " Info: "+best_array[i][4] + " Memory footprint: " +best_array[i][5] +
+        //     + " Variables: " +best_array[i][6] +  " Rocks Variables: "+best_array[i][7] +  " WT Variables: " +best_array[i][8] +
+        //     + " Faster Variables: " +best_array[i][9] +  " fasterh Variables: " +best_array[i][10]);
     }
 }
 
