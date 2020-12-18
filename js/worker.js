@@ -1,4 +1,5 @@
-
+var cost;
+var existingSystem;
 var input;
 var query_count = 10000000;
 var read_percentage = 50;
@@ -548,6 +549,9 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                 Variables.total_cost = total_IO;
                 Variables.latency = total_latency;
                 Variables.cost = (monthly_storage_cost + monthly_mem_cost).toFixed(3);
+                if (Math.floor(Variables.cost) == 3299) {
+                    console.log("indeed" + Z);
+                }
                 if (enable_SLA) {
                     Variables.cost = (monthly_storage_cost + monthly_mem_cost + SLA_cost).toFixed(3);
                 }
@@ -718,9 +722,11 @@ function getFPR( T, K, Z, L, Y, M, M_B, M_F, M_BF, data) {
 
 function navigateDesignSpaceForExistingDesign(combination, cloud_provider, existing_system, compression_style=0) {
     var Variables = parseInputVariables();
-    var N = Variables.N;
+
+    var data = Variables.N;
     var E = Variables.E;
     var F = Variables.F;
+
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
@@ -750,15 +756,14 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     var SLA_cost=computeSLARelatedCost(cloud_provider,Variables.N,Variables.E);
 
     var X;
-    var Y=0;
+    var Y = 0;
     var L;
     var M_F_HI;
     var M_F; // = ((B*E + (M - M_F)) > 0 ? B*E + (M - M_F) : (B*E)); // byte
     var M_F_LO; // = (M_B*(F)*T)/((B)*(E));
     var M_BF;
     var M_FP;
-    var FPR_sum;
-    var M_B = 0;
+    var FPR_sum = 1
 
     var Storage_Value=getStorageCost(Variables, cloud_provider);
     B=Storage_Value[0];
@@ -784,7 +789,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         if(combination[i]>0){
             mem_sum=combination[i]*VM_libraries[cloud_provider].mem_of_instance[i];
             max_RAM_purchased=VM_libraries[cloud_provider].mem_of_instance[i];
-            monthly_mem_cost=mem_sum*VM_libraries[cloud_provider].rate_of_instance[i]*24*30;
+            monthly_mem_cost=combination[i]*VM_libraries[cloud_provider].rate_of_instance[i]*24*30;
             Variables.VM_info= (mem_sum+" X "+VM_libraries[cloud_provider].name_of_instance[i]);
             Variables.VM_instance= VM_libraries[cloud_provider].name_of_instance[i];
             Variables.VM_instance_num=mem_sum;
@@ -806,11 +811,14 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
 
     //console.log(B,combination)
     B_=B;
-    var data=max_RAM_purchased*N/mem_sum;
+    data=max_RAM_purchased*Variables.N/mem_sum;
     M_BC=0;
+    var M_B;
+
     var M = max_RAM_purchased * 1024 * 1024 * 1024;
     var workload = max_RAM_purchased*query_count/mem_sum;
-
+    cost = monthly_storage_cost + monthly_mem_cost;
+    existingSystem = existing_system;
     if(existing_system=="rocks") {
         var T = 10;
         var K = 1;
@@ -912,14 +920,18 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     if(scenario=='A'){
         update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B);
         read_cost = analyzeReadCostAvgCase(FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data, E, Math.ceil(M_B), Math.ceil(E), compression_style);
+        if (existing_system == "WT") {
+            read_cost = read_cost * B_TREE_CACHE_DISCOUNT_FACTOR;
+        }
     }else {
         update_cost = analyzeUpdateCost(B, T, K, Z, L, Y, M, M_F, M_B, M_F_HI, M_F_LO);
         read_cost = analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum);
     }
 
 
+
     if(existing_system == "rocks") {
-        rmw_cost = read_cost + update_cost
+        rmw_cost = read_cost + update_cost;
     } else {
         rmw_cost = read_cost + 1.0/B;
     }
@@ -931,7 +943,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     if (short_scan_percentage != 0) {
         short_scan_cost = analyzeShortScanCost(B, T, K, Z, L, Y, M, M_B, M_F, M_BF);
     }
-    no_result_read_cost=analyzeReadCost(B, E, N, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum)-1;
+    no_result_read_cost=analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum)-1;
     long_scan_cost = analyzeLongScanCost(B, s);
 
     total_IO = workload*( insert_percentage * update_cost + blind_update_percentage * blind_update_cost + rmw_percentage * rmw_cost+ v * read_cost + r * no_result_read_cost);
@@ -941,7 +953,6 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     }
 
     var total_latency = total_IO / IOPS / 60 / 60 / 24; // Maybe divide this by 1024*1024*1024
-
     if(L==0)
         total_latency=0;
     if (total_IO < best_IO || best_IO < 0) {
@@ -1309,8 +1320,7 @@ function analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B){
     var update_cost;
     if(Z == 0) // LSH-table append-only
     {
-
-        var scale_up = 1.5;
+        var scale_up = 1.8;
         var term1;
         var q = Math.pow((1.0 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 1, E)), K);
         //console.log(getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 1, E));
@@ -1344,7 +1354,6 @@ function analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B){
 
 function analyzeReadCostAvgCase(FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data, E, int_M_B, int_E, compression_style)
 {
-
     // uniform
     var avg_read_cost;
     if(Z == 0) // LSH-table append-only
@@ -1370,9 +1379,6 @@ function analyzeReadCostAvgCase(FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data,
         c = (1 - q)*(1 - alpha_0);
         term1 = c;
         avg_read_cost = term1;
-        if (avg_read_cost > 1.0/B_) {
-            avg_read_cost = 1.0/B_;
-        }
         return avg_read_cost;
     }
 
@@ -1399,10 +1405,14 @@ function aggregateAvgCase(type, FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data,
     var cq=getcq(type, T, K, Z, L, Y, M_B, E);
     c=cq[0];
     q=cq[1];
+
     //console.log(c,q);
     term1 = c/q;
     FPR_sum = Math.exp((-M_BF*8/data)*Math.pow((Math.log(2)/Math.log(2.7182)), 2) * Math.pow(T, Y)) * Math.pow(Z, (T-1)/T) * Math.pow(K, 1/T) * Math.pow(T, (T/(T-1)))/(T-1);
-    //console.log(FPR_sum+" T="+T+" K="+K+" Z= "+Z+" M_B="+M_B/1024/1024/1024);
+
+    if (Math.floor(cost) == 3412 && existingSystem == "rocks") {
+        //console.log(FPR_sum, M_BF, data, T, Z, L, Y);
+    }//console.log(FPR_sum+" T="+T+" K="+K+" Z= "+Z+" M_B="+M_B/1024/1024/1024);
     for(var i = 1;i<=L-Y-1;i++)
     {
         p_i = (FPR_sum)*(T-1)/(T*K*Math.pow(T, L-Y-i));
@@ -1414,7 +1424,8 @@ function aggregateAvgCase(type, FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data,
             term2 = term2 + (p_i * term2_2);
         }
     }
-    for(var i = L-Y;i<=L;i++)
+    var hot_level_boundary = L - Y > 1 ? L - Y : 1;
+    for(var i = hot_level_boundary; i<=L; i++)
     {
         if (i == L-Y) {
             p_i = (FPR_sum)*(T-1)/(T*Z);
@@ -1434,7 +1445,9 @@ function aggregateAvgCase(type, FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data,
     //console.log(c,q);
     //console.log(term1,term2,term3);
     //if((term1 + term2 + term3)==0)
-   // console.log(T,K,Z,term1,term2,term3,c,q);
+    if (Math.floor(cost) == 3412 && existingSystem == "rocks") {
+        //console.log("Term 2: "+term2);
+    }
     return term1 + term2 + term3;
 }
 

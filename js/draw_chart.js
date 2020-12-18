@@ -1880,7 +1880,7 @@ function drawContinuumsNew(ContinuumArray){
     }
 
     best_array=getBestDesignEverArray(ContinuumArray);
-
+    //printBestArray(ContinuumArray);
     /*
 
     latency_array=new Array();
@@ -2889,6 +2889,8 @@ function drawDesigns(best_array, cost) {
 function printBestArray(best_array) {
     for (var i = 0; i < best_array.length; i++){
         console.log("Cost: "+best_array[i][0] + " latency: "+best_array[i][1] + " Provider Name: "+best_array[i][3]);
+        //console.log("Rocks Variables: "+best_array[i][0]+" "+best_array[i][7].cost+ " " + best_array[i][7].cloud_provider + " " + best_array[i][7].latency*24);
+            //"Cost: "+best_array[i][0] + " latency: "+best_array[i][1] + " Provider Name: "+best_array[i][3]);
         // + " VMCombination: "+best_array[i][2] +
         //     + " Provider Name: "+best_array[i][3] + " Info: "+best_array[i][4] + " Memory footprint: " +best_array[i][5] +
         //     + " Variables: " +best_array[i][6] +  " Rocks Variables: "+best_array[i][7] +  " WT Variables: " +best_array[i][8] +
@@ -2897,6 +2899,7 @@ function printBestArray(best_array) {
 }
 
 function drawDiagram(Variables, id){
+
     var result_div=document.getElementById(id)
     if(result_div==null)
         result_div=id;
@@ -2921,6 +2924,7 @@ function drawDiagram(Variables, id){
     if(L>5){
         height=96/L;
     }
+
     for (var i=0;i<L;i++){
         var div_new_row=document.createElement("div");
         div_new_row.setAttribute("class","row");
@@ -2975,13 +2979,17 @@ function drawDiagram(Variables, id){
                 div_tmp_row.appendChild(div_tmp_lsm_runs);
                 result_div.appendChild(div_tmp_row);
             }
-
+            if (Math.floor(Variables.cost) == 3299) {
+                console.log("Found first cost & L= "+Variables.L, n, Z);
+            }
         } else {
             maxRuns = K;
             n=K;
             //n = Math.min(K, 7);
         }
-
+        if (n<1){
+            n=1;
+        }
         for (var j = 0; j < n; j++) {
             if (maxRuns > 8 && j == 7) {
                 var span =document.createElement("span");
@@ -2997,7 +3005,7 @@ function drawDiagram(Variables, id){
                     break;
                 var button=document.createElement("button");
                 //button.setAttribute("class","lsm_button lsm_button"+(levelcss));
-
+                //console.log("One lsm_button created and L: "+L);
                 button.setAttribute("class","lsm_button");
 
                 var full_flag=true;

@@ -75,7 +75,7 @@ function init(){
     document.getElementById("AWS").style.fontWeight='bold';
     document.getElementById("AWS").style.fontSize='16px';
 
-    document.getElementById("cost").value = 3400;
+    document.getElementById("cost").value = 4000;
     //document.getElementById("latency").value = 5.7;
 
     document.getElementById("query_count").value=10000000000;
