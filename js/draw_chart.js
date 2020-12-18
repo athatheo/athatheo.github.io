@@ -2688,6 +2688,7 @@ function drawDesigns(best_array, cost) {
         document.getElementById("cost_result_p1").innerHTML=cost_result_text[0];
     }
     else{
+        printBestArray(best_array);
 
         if(best_array[best_array.length-1][0]<cost) {
             design_1_index=best_array.length-1;
@@ -2701,7 +2702,6 @@ function drawDesigns(best_array, cost) {
             l1=1;
             l2=-1;
         }else {
-            printBestArray(best_array);
             for (var i = 1; i < best_array.length; i++) {
                 if (best_array[i][0] >= cost||(best_array[i][1]*24<latency&&!isNaN(latency))) {
                     // console.log("best_array[i][0]: "+ best_array[i][0] + " i: "+i+" cost: "+cost+" bbest_array[i][1]: "+best_array[i][1]+" latency: "+latency+ " isnan: "+!isNaN(latency));
@@ -2784,7 +2784,6 @@ function drawDesigns(best_array, cost) {
         }
 
         var flag=0;
-
         if( cost_result_text[0] != "Cost is too little"){
 
             if(cost_result_text[0] == "We found 1 storage engine design for you at "+cost+".<br><br>"){ 
@@ -2887,8 +2886,9 @@ function drawDesigns(best_array, cost) {
 }
 
 function printBestArray(best_array) {
+    console.log(best_array);
     for (var i = 0; i < best_array.length; i++){
-        console.log("Cost: "+best_array[i][0] + " latency: "+best_array[i][1] + " Provider Name: "+best_array[i][3]);
+        //console.log("Cost: "+best_array[i][0] + " latency: "+best_array[i][1] + " Provider Name: "+best_array[i][3]);
         //console.log("Rocks Variables: "+best_array[i][0]+" "+best_array[i][7].cost+ " " + best_array[i][7].cloud_provider + " " + best_array[i][7].latency*24);
             //"Cost: "+best_array[i][0] + " latency: "+best_array[i][1] + " Provider Name: "+best_array[i][3]);
         // + " VMCombination: "+best_array[i][2] +

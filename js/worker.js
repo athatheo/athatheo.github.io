@@ -667,6 +667,7 @@ function getNoOfLevelsWacky(L, M_B, T, data, C, E)
         }
         L = Math.ceil(Math.log(multiplier_from_buffer * (T-1) / (C+1))/Math.log(T));
     }
+    return L;
 }
 
 function getNoOfLevels(M_B, T, data, E)
