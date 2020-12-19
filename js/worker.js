@@ -505,14 +505,16 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     M_B = 0.0;
     M_B_percent = 20;
     var scale_factor = 8;
-    for (var T = 2; T <= 32; T++) {
-        K = T - 1;
+    M_F = data / scale_factor * F * (1.0 + (1.0 / B));
+//    for (var T = 2; T <= 32; T++)
+    {
         for (Z = -1; Z <= 0; Z++) {
-            M_F = data / scale_factor * F * (1.0 + (1.0 / B));
             if (M_F > M) {
                 continue;
             }
             M_B = M - M_F;
+            T = (data*E)/M_B;
+            K = T - 1;
             L = 1;
             Y = 0;
             M_BF = 0.0;
@@ -569,6 +571,72 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
             if (Variables.total_cost == 0) {
                 Variables.total_cost = 0.1;
             }
+        }
+    }
+
+    scale_factor = 8;
+    M_F = data / scale_factor * F * (1.0 + (1.0 / B));
+    if (M_F < M){
+        M_B = M - M_F;
+        T = data*E/M_B;
+        K=T-1;
+        Z=-1;
+        M_BF=0;
+        Y=0;
+        M_BC=0;
+        L=1;
+        if (scenario == 'A') {
+            update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B);
+            read_cost = analyzeReadCostAvgCase(FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data, E, Math.ceil(M_B), Math.ceil(E), compression_style);
+        } else {
+            update_cost = analyzeUpdateCost(B, T, K, Z, L, Y, M, M_F, M_B, M_F_HI, M_F_LO);
+            read_cost = analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum);
+        }
+        rmw_cost = read_cost + 1.0 / B;
+        blind_update_cost = read_cost + 1.0 / B;
+        short_scan_cost = analyzeShortScanCost(B, T, K, Z, L, Y)
+        long_scan_cost = analyzeLongScanCost(s, B);
+        no_result_read_cost = read_cost - 1;
+        total_IO = workload * (update_cost * insert_percentage + read_cost * v + no_result_read_cost * r + rmw_cost * rmw_percentage + blind_update_cost * blind_update_percentage);
+
+        total_latency = total_IO / IOPS / 60 / 60/ 24; // Maybe divide this by 1024*1024*1024
+
+        if (L == 0)
+            total_latency = 0;
+
+        if (total_latency < best_latency || best_latency < 0) {
+            best_latency = total_latency;
+            Variables.K = K;
+            Variables.T = T;
+            Variables.L = L;
+            Variables.Z = Z;
+            Variables.Y = Y;
+            Variables.Buffer = M_B;
+            Variables.M_BF = M_BF;
+            Variables.M_FP = M_FP;
+            Variables.read_cost = read_cost;
+            Variables.update_cost = update_cost;
+            Variables.rmw_cost = rmw_cost;
+            Variables.blind_update_cost = blind_update_cost;
+            Variables.short_scan_cost = short_scan_cost;
+            Variables.long_scan_cost = long_scan_cost;
+            Variables.no_result_read_cost = no_result_read_cost;
+            Variables.total_cost = total_IO;
+            Variables.latency = total_latency;
+            Variables.cost = (monthly_storage_cost + monthly_mem_cost).toFixed(3);
+            if (enable_SLA) {
+                Variables.cost = (monthly_storage_cost + monthly_mem_cost + SLA_cost).toFixed(3);
+            }
+            Variables.memory_footprint = max_RAM_purchased * mem_sum;
+            Variables.cloud_provider = cloud_provider;
+            Variables.throughput = mem_sum * IOPS / total_IO;
+            Variables.compression_name = compression_libraries[compression_style].compression_name;
+            Variables.FPR = getFPR(T, K, Z, L, Y, M, M_B, M_F, M_BF, data);
+            Variables.SLA_cost = SLA_cost;
+            Variables.data_structure = "LSH";
+        }
+        if (Variables.total_cost == 0) {
+            Variables.total_cost = 0.1;
         }
     }
 
@@ -1089,7 +1157,6 @@ function buildContinuums(cloud_mode){
         return a[0]-b[0];
     })
     result_array = correctContinuum(result_array);
-    console.log(result_array);
     return result_array;
 }
 

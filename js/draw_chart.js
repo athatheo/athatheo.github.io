@@ -2870,7 +2870,6 @@ function drawDesigns(best_array, cost) {
 }
 
 function printBestArray(best_array) {
-    console.log(best_array);
     for (var i = 0; i < best_array.length; i++){
         //console.log("Cost: "+best_array[i][0] + " latency: "+best_array[i][1] + " Provider Name: "+best_array[i][3]);
         //console.log("Rocks Variables: "+best_array[i][0]+" "+best_array[i][7].cost+ " " + best_array[i][7].cloud_provider + " " + best_array[i][7].latency*24);
