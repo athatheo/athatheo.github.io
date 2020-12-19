@@ -2864,7 +2864,6 @@ function drawDesigns(best_array, cost) {
         }
     }
     global_index=design_1_index+flag;
-
     var chart_array=cutArray(best_array,chart_start_index,chart_end_index);
     return chart_array;
 }
