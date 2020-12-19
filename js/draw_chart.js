@@ -113,7 +113,6 @@ function drawCharts() {
     var last_throughput=0;
     for(var i=0;i<cost*2;i+=step_width){
         var best_design;
-        //console.log(i);
         x.push(i);
         y.push(countThroughput(i));
 
@@ -429,12 +428,7 @@ function drawChart2() {
                 hoverInfo = document.getElementById('hoverinfo2_azure');
             hoverInfo.innerHTML=("<b>"+cloud_provider+":</b><br>"+data.points[i].text);
         }
-        //console.log(data);
-        //hoverInfo.innerHTML = infotext.join('<br/>');
     })
-    //.on('plotly_unhover', function(data){
-    //    hoverInfo.innerHTML = '';
-    //});
 }
 
 function initChart(ContinuumArray, x, y, x_axis_title, y_axis_title, mode, cost){
@@ -843,7 +837,7 @@ function drawContinuums(if_regenerate=true) {
 
         if(best_array[best_array.length-1][0]<cost) {
             design_1_index=best_array.length-1;
-            cost_result_text[0]=("We found 1 storage engine design for you at "+cost+".<br><br>");
+            cost_result_text[0]=("We found 1 storage engine design for you at $"+cost+".<br><br>");
             console.log(cost_result_text[0],cost);
             //drawDiagram(best_array[best_array.length-1][5], 'cost_result_diagram1');
             cost_result_text[1]="<b>Our Option:</b>"
@@ -951,7 +945,6 @@ function drawContinuums(if_regenerate=true) {
                 }
                 if(best_array[design_1_index][8]!=-1) {
                     document.getElementById("cost_result_p8").innerHTML = "<b>WiredTiger</b>";
-                    //console.log(best_array[design_1_index][8])
                     if((cost-best_array[design_1_index][8].cost)>(best_array[design_1_index+1][8].cost-cost)) {
                         outputParameters(best_array[design_1_index+1][8], "cost_result_p9", l2);
                         outputNote(best_array[design_1_index][8], "cost_result_p9");
@@ -1074,7 +1067,7 @@ function drawContinuums(if_regenerate=true) {
         myPlot.on('plotly_hover', function(data){
             var hoverInfo = document.getElementById('hoverinfo6');
             hoverInfo.innerHTML=(data.points[0].text);
-            //console.log(data);
+
             //hoverInfo.innerHTML = infotext.join('<br/>');
             for(var i in ContinuumArray){
                 if(data.points[0].text==ContinuumArray[i][4]) {
@@ -1105,7 +1098,6 @@ function drawContinuums(if_regenerate=true) {
     myPlot.on('plotly_hover', function(data){
         var hoverInfo = document.getElementById('hoverinfo6');
         hoverInfo.innerHTML=(data.points[0].text);
-        //console.log(data);
         //hoverInfo.innerHTML = infotext.join('<br/>');
         for(var i in ContinuumArray){
             if(data.points[0].text==ContinuumArray[i][4]) {
@@ -1535,7 +1527,6 @@ function drawContinuums(if_regenerate=true) {
                 }
                 if(best_array[design_1_index][8]!=-1) {
                     document.getElementById("cost_result_p8").innerHTML = "<b>WiredTiger</b>";
-                    //console.log(best_array[design_1_index][8])
                     if((cost-best_array[design_1_index][8].cost)>(best_array[design_1_index+1][8].cost-cost)) {
                         outputParameters(best_array[design_1_index+1][8], "cost_result_p9", l2);
                         outputNote(best_array[design_1_index][8], "cost_result_p9");
@@ -1658,7 +1649,6 @@ function drawContinuums(if_regenerate=true) {
         myPlot.on('plotly_hover', function(data){
             var hoverInfo = document.getElementById('hoverinfo6');
             hoverInfo.innerHTML=(data.points[0].text);
-            //console.log(data);
             //hoverInfo.innerHTML = infotext.join('<br/>');
             for(var i in ContinuumArray){
                 if(data.points[0].text==ContinuumArray[i][4]) {
@@ -1689,7 +1679,6 @@ function drawContinuums(if_regenerate=true) {
     myPlot.on('plotly_hover', function(data){
         var hoverInfo = document.getElementById('hoverinfo6');
         hoverInfo.innerHTML=(data.points[0].text);
-        //console.log(data);
         //hoverInfo.innerHTML = infotext.join('<br/>');
         for(var i in ContinuumArray){
             if(data.points[0].text==ContinuumArray[i][4]) {
@@ -2157,7 +2146,6 @@ function drawContinuumsNew(ContinuumArray){
         myPlot.on('plotly_hover', function(data){
             var hoverInfo = document.getElementById('hoverinfo6');
             hoverInfo.innerHTML=(data.points[0].text);
-            //console.log(data);
             //hoverInfo.innerHTML = infotext.join('<br/>');
             for(var i in ContinuumArray){
                 if(data.points[0].text==ContinuumArray[i][4]) {
@@ -2188,7 +2176,6 @@ function drawContinuumsNew(ContinuumArray){
     myPlot.on('plotly_hover', function(data){
         var hoverInfo = document.getElementById('hoverinfo6');
         hoverInfo.innerHTML=(data.points[0].text);
-        //console.log(data);
         //hoverInfo.innerHTML = infotext.join('<br/>');
         for(var i in ContinuumArray){
             if(data.points[0].text==ContinuumArray[i][4]) {
@@ -2835,7 +2822,6 @@ function drawDesigns(best_array, cost) {
                 }
                 if(best_array[design_1_index][8]!=-1) {
                     document.getElementById("cost_result_p8").innerHTML = "<b>WiredTiger<br><br></b>";
-                    //console.log(best_array[design_1_index][8])
                     if((cost-best_array[design_1_index][8].cost)>(best_array[design_1_index+1][8].cost-cost)) {
                         outputParameters(best_array[design_1_index+1][8], "cost_result_p9", l2);
                         outputNote(best_array[design_1_index][8], "cost_result_p9");
@@ -2849,7 +2835,6 @@ function drawDesigns(best_array, cost) {
                 }
                 if(best_array[design_1_index][9]!=-1) {
                     document.getElementById("cost_result_p10").innerHTML = "<b>FASTER <br>(hybrid logs)<br></b>";
-                    //console.log(best_array[design_1_index][8])
                     if((cost-best_array[design_1_index][9].cost)>(best_array[design_1_index+1][9].cost-cost)) {
                         outputParameters(best_array[design_1_index+1][9], "cost_result_p11", l2);
                         outputNote(best_array[design_1_index][9], "cost_result_p11");
@@ -2864,7 +2849,6 @@ function drawDesigns(best_array, cost) {
 
                 if(best_array[design_1_index][10]!=-1) {
                     document.getElementById("cost_result_p12").innerHTML = "<b>FASTER <br>(append-only logs)<br></b>";
-                    //console.log(best_array[design_1_index][8])
                     if((cost-best_array[design_1_index][10].cost)>(best_array[design_1_index+1][10].cost-cost)) {
                         outputParameters(best_array[design_1_index+1][10], "cost_result_p13", l2);
                         outputNote(best_array[design_1_index][10], "cost_result_p13");
@@ -2903,7 +2887,6 @@ function drawDiagram(Variables, id){
     var result_div=document.getElementById(id)
     if(result_div==null)
         result_div=id;
-    //console.log(result_div);
     removeAllChildren(result_div);
     var L=Variables.L;
     var K=Variables.K;
@@ -2979,9 +2962,6 @@ function drawDiagram(Variables, id){
                 div_tmp_row.appendChild(div_tmp_lsm_runs);
                 result_div.appendChild(div_tmp_row);
             }
-            if (Math.floor(Variables.cost) == 3299) {
-                console.log("Found first cost & L= "+Variables.L, n, Z);
-            }
         } else {
             maxRuns = K;
             n=K;
@@ -3004,8 +2984,6 @@ function drawDiagram(Variables, id){
                 if(j>8)
                     break;
                 var button=document.createElement("button");
-                //button.setAttribute("class","lsm_button lsm_button"+(levelcss));
-                //console.log("One lsm_button created and L: "+L);
                 button.setAttribute("class","lsm_button");
 
                 var full_flag=true;
@@ -3026,7 +3004,6 @@ function drawDiagram(Variables, id){
                 // 	}
                 // }
 
-                //console.log(cur_length);
                 if(maxRuns > 8){
                     button.setAttribute("style","width: "+cur_length/8+"px; height:"+height*2/3+"px; padding: 1px 0px 2px 0px");
                 }else{
@@ -3060,7 +3037,7 @@ function outputParameters(Variables, id, l) {
         drawBar(result_div, [[(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2)*0.9, "Mutable"], [(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2)*0.1, "Read-only"],[(Variables.M_F / 1024 / 1024 / 1024).toFixed(2), "Hash index"]], l);
     }else if(id=="cost_result_p13"){
         drawBar(result_div, [[(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2), "Buffer"], [(Variables.M_F / 1024 / 1024 / 1024).toFixed(2), "Hash index"]], l);
-    }else {
+    }else if (!isNaN(Variables.Buffer)){
         drawBar(result_div, [[(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2), "Buffer"], [(Variables.M_BF / 1024 / 1024 / 1024).toFixed(2), "Bloom filter"], [(Variables.M_FP / 1024 / 1024 / 1024).toFixed(2), "Fence pointer"]], l);
     }
 
