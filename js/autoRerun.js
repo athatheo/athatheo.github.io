@@ -54,7 +54,7 @@ function init(){
 
     // Dataset and Environment
     document.getElementById("N").value=numberWithCommas(100000000000); //(10M values)
-    document.getElementById("E").value=128;
+    document.getElementById("E").value=512;
     //document.getElementById("B").value=4096; //in B
     document.getElementById("F").value=64;
 
@@ -75,7 +75,7 @@ function init(){
     document.getElementById("AWS").style.fontWeight='bold';
     document.getElementById("AWS").style.fontSize='16px';
 
-    document.getElementById("cost").value = 4000;
+    document.getElementById("cost").value = 3200;
     //document.getElementById("latency").value = 5.7;
 
     document.getElementById("query_count").value=10000000000;

@@ -2788,17 +2788,17 @@ function drawDesigns(best_array, cost) {
                     removeAllChildren(document.getElementById("cost_result_p9"));
                 }
                 if(best_array[design_1_index][9]!=-1) {
-                    document.getElementById("cost_result_p10").innerHTML = "<b>FASTER <br>(hybrid logs)<br></b>";
+                    document.getElementById("cost_result_p10").innerHTML = "<b>FASTER <br>(append-only logs)<br></b>";
                     outputParameters(best_array[design_1_index][9], "cost_result_p11", l1);
                 }else{
-                    document.getElementById("cost_result_p10").innerHTML = "<b>FASTER-H: Not Enough Memory<br><br></b>";
+                    document.getElementById("cost_result_p10").innerHTML = "<b>FASTER-A: Not Enough Memory<br><br></b>";
                     removeAllChildren(document.getElementById("cost_result_p11"));
                 }
                 if(best_array[design_1_index][10]!=-1) {
-                    document.getElementById("cost_result_p12").innerHTML = "<b>FASTER <br>(append-only logs)<br></b>";
+                    document.getElementById("cost_result_p12").innerHTML = "<b>FASTER <br>(hybrid logs)<br></b>";
                     outputParameters(best_array[design_1_index][10], "cost_result_p13", l1);
                 }else{
-                    document.getElementById("cost_result_p12").innerHTML = "<b>FASTER-A: Not Enough Memory<br><br></b>";
+                    document.getElementById("cost_result_p12").innerHTML = "<b>FASTER-H: Not Enough Memory<br><br></b>";
                     removeAllChildren(document.getElementById("cost_result_p13"));
                 }
 
@@ -2833,7 +2833,7 @@ function drawDesigns(best_array, cost) {
                     removeAllChildren(document.getElementById("cost_result_p9"));
                 }
                 if(best_array[design_1_index][9]!=-1) {
-                    document.getElementById("cost_result_p10").innerHTML = "<b>FASTER <br>(hybrid logs)<br></b>";
+                    document.getElementById("cost_result_p10").innerHTML = "<b>FASTER <br>(append-only logs)<br></b>";
                     if((cost-best_array[design_1_index][9].cost)>(best_array[design_1_index+1][9].cost-cost)) {
                         outputParameters(best_array[design_1_index+1][9], "cost_result_p11", l2);
                         outputNote(best_array[design_1_index][9], "cost_result_p11");
@@ -2842,12 +2842,12 @@ function drawDesigns(best_array, cost) {
                         outputNote(best_array[design_1_index+1][9], "cost_result_p11");
                     }
                 }else{
-                    document.getElementById("cost_result_p10").innerHTML = "<b>FASTER-H: Not Enough Memory<br><br></b>";
+                    document.getElementById("cost_result_p10").innerHTML = "<b>FASTER-A: Not Enough Memory<br><br></b>";
                     removeAllChildren(document.getElementById("cost_result_p11"));
                 }
 
                 if(best_array[design_1_index][10]!=-1) {
-                    document.getElementById("cost_result_p12").innerHTML = "<b>FASTER <br>(append-only logs)<br></b>";
+                    document.getElementById("cost_result_p12").innerHTML = "<b>FASTER <br>(hybrid logs)<br></b>";
                     if((cost-best_array[design_1_index][10].cost)>(best_array[design_1_index+1][10].cost-cost)) {
                         outputParameters(best_array[design_1_index+1][10], "cost_result_p13", l2);
                         outputNote(best_array[design_1_index][10], "cost_result_p13");
@@ -2856,7 +2856,7 @@ function drawDesigns(best_array, cost) {
                         outputNote(best_array[design_1_index+1][10], "cost_result_p13");
                     }
                 }else{
-                    document.getElementById("cost_result_p12").innerHTML = "<b>FASTER-A: Not Enough Memory<br><br></b>";
+                    document.getElementById("cost_result_p12").innerHTML = "<b>FASTER-H: Not Enough Memory<br><br></b>";
                     removeAllChildren(document.getElementById("cost_result_p13"));
                 }
             }
@@ -3039,7 +3039,6 @@ function outputParameters(Variables, id, l) {
         drawBar(result_div, [[(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2), "Buffer"], [(Variables.M_F / 1024 / 1024 / 1024).toFixed(2), "Hash index"]], l);
     }else if (!isNaN(Variables.Buffer)){
 
-        console.log(Variables.Buffer/(1024*1024*1024), Variables.M_BF/(1024*1024*1024), Variables.M_FP/(1024*1024*1024),l);
         drawBar(result_div, [[(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2), "Buffer"], [(Variables.M_BF / 1024 / 1024 / 1024).toFixed(2), "Bloom filter"], [(Variables.M_FP / 1024 / 1024 / 1024).toFixed(2), "Fence pointer"]], l);
     }
 
@@ -3469,14 +3468,12 @@ function drawBar(result_div,value,l,mode,w=230,h=15) {
     for(var i=0;i<length;i++)
         memory_sum+=parseFloat(value[i][0]);
 
-    console.log("Memory Sum: "+memory_sum);
     if(result_div.id=="cost_result_p3") {
         outputText(result_div,"In-memory",75);
 
     }
 
     for(var i=0;i<length;i++){
-        console.log("Length: "+length);
         var bar=document.createElement("div");
         bar.setAttribute("class","color_bar tooltip3");
         bar.setAttribute("style","width:"+width*parseFloat(value[i][0])/memory_sum+"px;background-color:"+colors[i]+"; height:"+h+"px");

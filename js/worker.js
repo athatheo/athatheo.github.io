@@ -997,10 +997,14 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     var no_result_read_cost;
     var short_scan_cost;
     var long_scan_cost;
-
+    cost = monthly_mem_cost  + monthly_storage_cost;
+    existing_systems = existing_system;
     if(scenario=='A'){
         update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B);
         read_cost = analyzeReadCostAvgCase(FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data, E, Math.ceil(M_B), Math.ceil(E), compression_style);
+        if ((existing_system == "FASTER" || existing_system == "FASTER_H") && Math.floor(cost) == 3186){
+            console.log(existing_system, update_cost, read_cost, workload, IOPS, workload*( insert_percentage * update_cost+v * read_cost) / IOPS / 60 / 60 );
+        }
         if (existing_system == "WT") {
             read_cost = read_cost * B_TREE_CACHE_DISCOUNT_FACTOR;
         }
@@ -1022,8 +1026,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     if (short_scan_percentage != 0) {
         short_scan_cost = analyzeShortScanCost(B, T, K, Z, L, Y, M, M_B, M_F, M_BF);
     }
-    cost = monthly_mem_cost  + monthly_storage_cost;
-    existing_systems = existing_system
+
     no_result_read_cost=0;//analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum)-1;
 
     long_scan_cost = analyzeLongScanCost(B, s);
