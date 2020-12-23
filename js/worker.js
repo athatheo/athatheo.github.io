@@ -546,7 +546,8 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                 Variables.Y = Y;
                 Variables.Buffer = M_B;
                 Variables.M_BF = M_BF;
-                Variables.M_FP = M_FP;
+                Variables.M_FP = 0;
+                Variables.M_F = M_F;
                 Variables.read_cost = read_cost;
                 Variables.update_cost = update_cost;
                 Variables.rmw_cost = rmw_cost;
@@ -612,8 +613,9 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
             Variables.Z = T-1; // Z was set to 0 or -1 for engineering purposes, in reality it's this
             Variables.Y = Y;
             Variables.Buffer = M_B;
+            Variables.M_F = M_F;
             Variables.M_BF = M_BF;
-            Variables.M_FP = M_FP;
+            Variables.M_FP = 0;
             Variables.read_cost = read_cost;
             Variables.update_cost = update_cost;
             Variables.rmw_cost = rmw_cost;
@@ -1002,9 +1004,6 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     if(scenario=='A'){
         update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B);
         read_cost = analyzeReadCostAvgCase(FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data, E, Math.ceil(M_B), Math.ceil(E), compression_style);
-        if ((existing_system == "FASTER" || existing_system == "FASTER_H") && Math.floor(cost) == 3186){
-            console.log(existing_system, update_cost, read_cost, workload, IOPS, workload*( insert_percentage * update_cost+v * read_cost) / IOPS / 60 / 60 );
-        }
         if (existing_system == "WT") {
             read_cost = read_cost * B_TREE_CACHE_DISCOUNT_FACTOR;
         }
@@ -1064,6 +1063,9 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         Variables.total_cost = total_IO;
         Variables.latency = total_latency;
         Variables.cost = (monthly_storage_cost + monthly_mem_cost).toFixed(3);
+        if (Math.floor(Variables.cost) == 3186) {
+            console.log()
+        }
         if (enable_SLA) {
             Variables.cost = (monthly_storage_cost + monthly_mem_cost + SLA_cost).toFixed(3);
         }

@@ -2964,9 +2964,6 @@ function drawDiagram(Variables, id){
             n=K;
             //n = Math.min(K, 7);
         }
-        if (n<1){
-            n=1;
-        }
         for (var j = 0; j < n; j++) {
             if (maxRuns > 8 && j == 7) {
                 var span =document.createElement("span");
@@ -3037,9 +3034,10 @@ function outputParameters(Variables, id, l) {
         drawBar(result_div, [[(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2)*0.9, "Mutable"], [(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2)*0.1, "Read-only"],[(Variables.M_F / 1024 / 1024 / 1024).toFixed(2), "Hash index"]], l);
     }else if(id=="cost_result_p13"){
         drawBar(result_div, [[(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2), "Buffer"], [(Variables.M_F / 1024 / 1024 / 1024).toFixed(2), "Hash index"]], l);
-    }else if (!isNaN(Variables.Buffer)){
-
+    }else if (!isNaN(Variables.Buffer) && Variables.data_structure!="LSH"){
         drawBar(result_div, [[(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2), "Buffer"], [(Variables.M_BF / 1024 / 1024 / 1024).toFixed(2), "Bloom filter"], [(Variables.M_FP / 1024 / 1024 / 1024).toFixed(2), "Fence pointer"]], l);
+    } else if (!isNaN(Variables.Buffer) && Variables.data_structure=="LSH"){
+        drawBar(result_div, [[(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2), "Buffer"], [(Variables.M_F / 1024 / 1024 / 1024).toFixed(2), "Hash index"]], l);
     }
 
     if(result_div.id=="cost_result_p3") {
