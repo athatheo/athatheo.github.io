@@ -582,7 +582,6 @@ function drawContinuums(if_regenerate=true) {
     else {
         var ContinuumArray = global_continuums_array;
         ContinuumArray.sort(function (a,b) {return a[0]-b[0];});
-        console.log("not generate");
     }
     global_continuums_array=ContinuumArray;
 
@@ -3028,7 +3027,10 @@ function outputParameters(Variables, id, l) {
     div_tmp.setAttribute("style"," background-size:100% 100%; text-align: center; width:"+230*l+"px; height: 17px; padding-bottom:3px");
     var text_tmp= document.createElement("div");
     text_tmp.setAttribute("style", "background-color:white; display:inline-block; position:relative; bottom: 2px; padding-left:2px; padding-right:2px");
-    text_tmp.innerHTML=Variables.memory_footprint/Variables.VM_instance_num+" GB";
+
+    if (!isNaN(Variables.Buffer)){ // We don't care about Buffer here; it's just that if Buffer is NaN, that means the code didnt move forward => that means that the data fits in memory, and we don't wanna show this
+        text_tmp.innerHTML=Variables.memory_footprint/Variables.VM_instance_num+" GB";
+    }
     div_tmp.appendChild(text_tmp);
     result_div.appendChild(div_tmp);
     if(id=="cost_result_p11"){
@@ -3036,6 +3038,8 @@ function outputParameters(Variables, id, l) {
     }else if(id=="cost_result_p13"){
         drawBar(result_div, [[(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2), "Buffer"], [(Variables.M_F / 1024 / 1024 / 1024).toFixed(2), "Hash index"]], l);
     }else if (!isNaN(Variables.Buffer)){
+
+        console.log(Variables.Buffer/(1024*1024*1024), Variables.M_BF/(1024*1024*1024), Variables.M_FP/(1024*1024*1024),l);
         drawBar(result_div, [[(Variables.Buffer / 1024 / 1024 / 1024).toFixed(2), "Buffer"], [(Variables.M_BF / 1024 / 1024 / 1024).toFixed(2), "Bloom filter"], [(Variables.M_FP / 1024 / 1024 / 1024).toFixed(2), "Fence pointer"]], l);
     }
 
@@ -3465,12 +3469,14 @@ function drawBar(result_div,value,l,mode,w=230,h=15) {
     for(var i=0;i<length;i++)
         memory_sum+=parseFloat(value[i][0]);
 
+    console.log("Memory Sum: "+memory_sum);
     if(result_div.id=="cost_result_p3") {
         outputText(result_div,"In-memory",75);
 
     }
 
     for(var i=0;i<length;i++){
+        console.log("Length: "+length);
         var bar=document.createElement("div");
         bar.setAttribute("class","color_bar tooltip3");
         bar.setAttribute("style","width:"+width*parseFloat(value[i][0])/memory_sum+"px;background-color:"+colors[i]+"; height:"+h+"px");

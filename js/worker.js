@@ -325,10 +325,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     M_BC=0;
     var M_B;
 
-    // **********************************************************************
-    // BTREE design space
-    // **********************************************************************
-    var M_B_percent = 20;
+
     var M = max_RAM_purchased*1024*1024*1024;
     var workload = max_RAM_purchased*query_count/mem_sum;
 
@@ -340,7 +337,10 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
         Variables.memory_footprint=max_RAM_purchased*mem_sum;
         return Variables;
     }
-
+    // **********************************************************************
+    // BTREE design space
+    // **********************************************************************
+    var M_B_percent = 20;
     while(M_B_percent < 100) {
         M_B = M_B_percent*M/100;
         M_FP = M - M_B;
@@ -513,7 +513,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                 continue;
             }
             M_B = M - M_F;
-            T = (data*E)/M_B;
+            T = Math.ceil(data*E/M_B);
             K = T - 1;
             L = 1;
             Y = 0;
@@ -542,7 +542,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                 Variables.K = K;
                 Variables.T = T;
                 Variables.L = L;
-                Variables.Z = Z;
+                Variables.Z = T-1; // Z was set to 0 or -1 for engineering purposes, in reality it's this
                 Variables.Y = Y;
                 Variables.Buffer = M_B;
                 Variables.M_BF = M_BF;
@@ -578,7 +578,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     M_F = data / scale_factor * F * (1.0 + (1.0 / B));
     if (M_F < M){
         M_B = M - M_F;
-        T = data*E/M_B;
+        T = Math.ceil(data*E/M_B);
         K=T-1;
         Z=-1;
         M_BF=0;
@@ -609,7 +609,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
             Variables.K = K;
             Variables.T = T;
             Variables.L = L;
-            Variables.Z = Z;
+            Variables.Z = T-1; // Z was set to 0 or -1 for engineering purposes, in reality it's this
             Variables.Y = Y;
             Variables.Buffer = M_B;
             Variables.M_BF = M_BF;
@@ -904,7 +904,6 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         Variables.memory_footprint=max_RAM_purchased*mem_sum;
         return Variables;
     }
-
     if(existing_system=="rocks") {
         var T = 10;
         var K = 1;
@@ -1010,8 +1009,6 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         read_cost = analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum);
     }
 
-
-
     if(existing_system == "rocks") {
         rmw_cost = read_cost + update_cost;
     } else {
@@ -1025,7 +1022,9 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     if (short_scan_percentage != 0) {
         short_scan_cost = analyzeShortScanCost(B, T, K, Z, L, Y, M, M_B, M_F, M_BF);
     }
-    no_result_read_cost=analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum)-1;
+    cost = monthly_mem_cost  + monthly_storage_cost;
+    existing_systems = existing_system
+    no_result_read_cost=0;//analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum)-1;
 
     long_scan_cost = analyzeLongScanCost(B, s);
 
@@ -1043,7 +1042,11 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         Variables.K = K;
         Variables.T = T;
         Variables.L = L;
-        Variables.Z = Z;
+        if (Z<=0) {
+            Variables.Z = T-1; // Z was set to 0 or -1 for engineering purposes, in reality it's this
+        } else {
+            Variables.Z = Z;
+        }
         Variables.Y = Y;
         Variables.Buffer = M_B;
         Variables.M_BF = M_BF;
@@ -1827,6 +1830,9 @@ function analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum){
     }
     entries_in_hot_level = sum;
     var bits_per_entry = M_BF*8/entries_in_hot_level;
+    if (Z<=0){
+        Z = T-1;
+    }
     FPR_sum = Math.exp(((-M_BF*8)/data)*Math.pow(Math.log(2),2)*Math.pow(T, Y)) * Math.pow(Z, (T-1)/T) * Math.pow(K, 1/T) * Math.pow(T, (T/(T-1)))/(T-1);
 
     return (1.0 + (Y*Z) + FPR_sum);
