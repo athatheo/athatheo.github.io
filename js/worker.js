@@ -1988,9 +1988,6 @@ function initializeVMLibraries()
     VM_libraries[2].num_of_vcpu[4] = 20;
     VM_libraries[2].num_of_vcpu[5] = 32;
     VM_libraries[2].num_of_vcpu[6] = 64;
-
-    //printVMLibraries();
-    // console.log(VM_libraries)
     return VM_libraries;
 }
 
