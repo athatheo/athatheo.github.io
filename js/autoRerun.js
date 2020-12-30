@@ -59,7 +59,7 @@ function init(){
     document.getElementById("F").value=64;
 
     // Workload
-    document.getElementById("s").value = 4096;
+    document.getElementById("s").value = 128;
     document.getElementById("qS").value = 0;
     //document.getElementById("w").value = 0.1 This was before adding the insert to read modify boxes
     document.getElementById("insert_workload").value = 0.5;
@@ -68,6 +68,7 @@ function init(){
     document.getElementById("r").value = 0.0;
     document.getElementById("v").value = 0.5;
     document.getElementById("qL").value = 0.0;
+    document.getElementById("qEL").value = 0.0;
     //document.getElementById("X").value = numberWithCommas(0);
 
     //buttons

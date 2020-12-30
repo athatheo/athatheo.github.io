@@ -96,6 +96,7 @@ function Variables()
     var v;
     var qL;
     var qS;
+    var qEL;
 
     var X; //updated entries in LL-Bush
     var Y;
@@ -117,6 +118,7 @@ function Variables()
     var no_result_read_cost;
     var short_scan_cost;
     var long_scan_cost;
+    var empty_long_scan_cost;
     var total_cost;
     var SLA_cost;
 
@@ -178,7 +180,7 @@ function parseInputVariables()
     parsedBoxes.v = parseFloat(document.getElementById("v").value);
     parsedBoxes.qL = parseFloat(document.getElementById("qL").value);
     parsedBoxes.qS = parseFloat(document.getElementById("qS").value);
-
+    parsedBoxes.qEL = parseFloat(document.getElementById("qEL").value);
     parsedBoxes.query_count = parseInt(document.getElementById("query_count").value.replace(/\D/g,''), 10);
 
 
