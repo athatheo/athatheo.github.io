@@ -448,12 +448,12 @@
                         </div>
 
                         <div class="input-group">
-                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Sum of Lookup Operations</span>Sum of Lookups %</span>
-                            <input id="lookup_percentage" type="text" readonly class="form-control" aria-label="Proportion of sum point lookup operation" placeholder="(e.g., 1)"  style="text-align:right" />
+                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Lookup Operations</span>Lookups %</span>
+                            <input id="lookup_percentage" type="text" readonly class="form-control" aria-label="Proportion of lookup operation" placeholder="(e.g., 1)"  style="text-align:right" />
                             <span class="input-group-btn">
-                            <div class="trigger rotate" style="cursor: pointer; width:25px; position:relative; top:1px; display: inline-block" data-toggle="collapse" href="#lookups" role="button" aria-expanded="false">
+                            <div class="trigger rotate" style="cursor: pointer; width:25px; position:relative; top:1px; left:5px; display: inline-block" data-toggle="collapse" href="#lookups" role="button" aria-expanded="false">
                                 <div id="workload-trigger2" onclick="adjustGuide()">
-                                    <img class="img-responsive img-centered" style="width:25px" src="./images/arrow.png"/>
+                                    <img class="img-responsive img-centered" style="width:18px" src="./images/arrow.png"/>
                                 </div>
                             </div>
                             </span>
@@ -472,12 +472,12 @@
                         </div>
 
                         <div class="input-group">
-                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Sum of Write Operations</span>Sum of Writes %</span>
-                            <input id="insert_percentage" type="text" readonly class="form-control" aria-label="Proportion of Sum of Write Operations" placeholder="(e.g., 1)"  style="text-align:right" />
+                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Write Operations</span>Writes %</span>
+                            <input id="insert_percentage" type="text" readonly class="form-control" aria-label="Proportion of Write Operations" placeholder="(e.g., 1)"  style="text-align:right" />
                             <span class="input-group-btn">
-                            <div class="trigger rotate" style="cursor: pointer; width:25px; position:relative; top:1px; display: inline-block" data-toggle="collapse" href="#inserts" role="button" aria-expanded="false">
+                            <div class="trigger rotate" style="cursor: pointer; width:25px; position:relative; top:1px; left:5px; display: inline-block" data-toggle="collapse" href="#inserts" role="button" aria-expanded="false">
                                 <div id="workload-trigger3" onclick="adjustGuide()">
-                                    <img class="img-responsive img-centered" style="width:25px" src="./images/arrow.png"/>
+                                    <img class="img-responsive img-centered" style="width:18px" src="./images/arrow.png"/>
                                 </div>
                             </div>
                             </span>
@@ -499,13 +499,13 @@
                         </div>
                         </div>
 
-                        <div class="input-group">
-                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Sum of Range Query Operations</span>Sum of Range Queries %</span>
-                            <input id="range_queries_percentage" type="text" readonly class="form-control" aria-label="Proportion of Sum of Range Query Operations" placeholder="(e.g., 1)"  style="text-align:right" />
+                        <div class="input-group" >
+                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Range Query Operations</span>Range Queries %</span>
+                            <input id="range_queries_percentage" type="text" readonly class="form-control" aria-label="Proportion of Range Query Operations" placeholder="(e.g., 1)"  style="text-align:right" />
                             <span class="input-group-btn">
-                            <div class="trigger rotate" style="cursor: pointer; width:25px; position:relative; top:1px; display: inline-block" data-toggle="collapse" href="#range_queries" role="button" aria-expanded="false">
+                            <div class="trigger rotate" style="cursor: pointer; width:25px; position:relative; top:1px; left:5px; display: inline-block" data-toggle="collapse" href="#range_queries" role="button" aria-expanded="false">
                                 <div id="workload-trigger4" onclick="adjustGuide()">
-                                    <img class="img-responsive img-centered" style="width:25px" src="./images/arrow.png"/>
+                                    <img class="img-responsive img-centered" style="width:18px" src="./images/arrow.png"/>
                                 </div>
                             </div>
                             </span>
@@ -526,9 +526,9 @@
                             <input id="qEL" type="text" class="form-control" aria-label="Proportion of Empty Range Lookup Operation" placeholder=" qEL (e.g., 1)"  style="text-align:right" onchange="updateReadOnlyFields()"/>
                         </div>
 
-                        <div class="input-group" style="display: none">
+                        <div class="input-group">
                             <span class="input-group-addon"><span data-tooltip="The number of unique entries in the target key range" data-tooltip-position="bottom"> Target Range Size </span></span>
-                            <input id="s" type="number" class="form-control" aria-label="Proportion" placeholder=" s (e.g., 2048)"  style="text-align:right;"/>
+                            <input id="s" type="number" class="form-control" aria-label="Proportion" placeholder=" s (e.g., 2048)"  style="text-align:right;" onchange="updateReadOnlyFields()"/>
                         </div>
                         </div>
 
