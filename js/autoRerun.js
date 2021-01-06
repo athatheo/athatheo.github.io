@@ -70,7 +70,7 @@ function init(){
     document.getElementById("qL").value = 0.0;
     document.getElementById("qEL").value = 0.0;
     //document.getElementById("X").value = numberWithCommas(0);
-
+    updateReadOnlyFields();
     //buttons
 
     document.getElementById("AWS").style.fontWeight='bold';
@@ -335,6 +335,12 @@ function init(){
     //initScenario4();
 }
 
+function updateReadOnlyFields(){
+    document.getElementById("lookup_percentage").value = parseFloat(document.getElementById("v").value) + parseFloat(document.getElementById("r").value);
+    document.getElementById("insert_percentage").value = parseFloat(document.getElementById("insert_workload").value) + parseFloat(document.getElementById("blind_update_workload").value) + parseFloat(document.getElementById("read_modify_update_workload").value);
+    document.getElementById("range_queries_percentage").value = parseFloat(document.getElementById("qL").value) + parseFloat(document.getElementById("qEL").value) + parseFloat(document.getElementById("qS").value);
+
+}
 
 function LoadCharts() {
 

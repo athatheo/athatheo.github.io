@@ -3408,8 +3408,6 @@ function putTheWordAndBeforeTheLastPercentage(string_to_edit) {
     return string_to_edit;
 }
 
-
-
 function outputParameter(result_div,value,text,highlight=false){
     var div_tmp = document.createElement("div");
     div_tmp.setAttribute("class", "input-group");

@@ -401,6 +401,10 @@
                                 <img class="img-responsive img-centered" style="width:25px" src="./images/arrow.png"/>
                             </div>
                         </div>
+
+
+
+
                     </div>
                     <div id="workload-setting" class="collapse multi-collapse">
                         <!-- <div class="row">
@@ -444,49 +448,91 @@
                         </div>
 
                         <div class="input-group">
+                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Sum of Lookup Operations</span>Sum of Lookups %</span>
+                            <input id="lookup_percentage" type="text" readonly class="form-control" aria-label="Proportion of sum point lookup operation" placeholder="(e.g., 1)"  style="text-align:right" />
+                            <span class="input-group-btn">
+                            <div class="trigger rotate" style="cursor: pointer; width:25px; position:relative; top:1px; display: inline-block" data-toggle="collapse" href="#lookups" role="button" aria-expanded="false">
+                                <div id="workload-trigger2" onclick="adjustGuide()">
+                                    <img class="img-responsive img-centered" style="width:25px" src="./images/arrow.png"/>
+                                </div>
+                            </div>
+                            </span>
+                        </div>
+                        <div id="lookups" class="collapse multi-collapse">
+
+                        <div class="input-group">
                             <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Existing Point Lookup Operation</span>Point Lookups %</span>
-                            <input id="v" type="text" class="form-control" aria-label="Proportion of existing point lookup operation" placeholder=" v (e.g., 1)"  style="text-align:right" />
+                            <input id="v" type="text" class="form-control" aria-label="Proportion of existing point lookup operation" placeholder=" v (e.g., 1)"  style="text-align:right" onchange="updateReadOnlyFields()"/>
                         </div>
 
                         <div class="input-group" >
                             <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Non-result Point Lookup Operation</span>Zero result Point Lookups %</span>
-                            <input id="r" type="text" class="form-control" aria-label="Proportion of non-result point lookup operation" placeholder=" r (e.g., 1)"  style="text-align:right" />
+                            <input id="r" type="text" class="form-control" aria-label="Proportion of non-result point lookup operation" placeholder=" r (e.g., 1)"  style="text-align:right" onchange="updateReadOnlyFields()"/>
+                        </div>
                         </div>
 
                         <div class="input-group">
+                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Sum of Write Operations</span>Sum of Writes %</span>
+                            <input id="insert_percentage" type="text" readonly class="form-control" aria-label="Proportion of Sum of Write Operations" placeholder="(e.g., 1)"  style="text-align:right" />
+                            <span class="input-group-btn">
+                            <div class="trigger rotate" style="cursor: pointer; width:25px; position:relative; top:1px; display: inline-block" data-toggle="collapse" href="#inserts" role="button" aria-expanded="false">
+                                <div id="workload-trigger3" onclick="adjustGuide()">
+                                    <img class="img-responsive img-centered" style="width:25px" src="./images/arrow.png"/>
+                                </div>
+                            </div>
+                            </span>
+                        </div>
+                        <div id="inserts" class="collapse multi-collapse">
+                        <div class="input-group">
                             <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Inserts in the Workload</span> Inserts % </span>
-                            <input id="insert_workload" type="text" class="form-control" aria-label="Proportion of inserts operation" placeholder=" w (e.g., 1)"  style="text-align:right"/>
+                            <input id="insert_workload" type="text" class="form-control" aria-label="Proportion of inserts operation" placeholder=" w (e.g., 1)"  style="text-align:right" onchange="updateReadOnlyFields()"/>
                         </div>
 
                         <div class="input-group">
                             <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Blind Updates in the Workload</span> Blind Updates % </span>
-                            <input id="blind_update_workload" type="text" class="form-control" aria-label="Proportion of Blind Updates operation" placeholder=" w (e.g., 1)"  style="text-align:right"/>
+                            <input id="blind_update_workload" type="text" class="form-control" aria-label="Proportion of Blind Updates operation" placeholder=" w (e.g., 1)"  style="text-align:right" onchange="updateReadOnlyFields()"/>
                         </div>
 
                         <div class="input-group">
                             <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Read Modify Updates in the Workload</span> Read Modify Updates % </span>
-                            <input id="read_modify_update_workload" type="text" class="form-control" aria-label="Proportion of Read Modify Updates operation" placeholder=" w (e.g., 1)"  style="text-align:right"/>
+                            <input id="read_modify_update_workload" type="text" class="form-control" aria-label="Proportion of Read Modify Updates operation" placeholder=" w (e.g., 1)"  style="text-align:right" onchange="updateReadOnlyFields()"/>
+                        </div>
                         </div>
 
+                        <div class="input-group">
+                            <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Sum of Range Query Operations</span>Sum of Range Queries %</span>
+                            <input id="range_queries_percentage" type="text" readonly class="form-control" aria-label="Proportion of Sum of Range Query Operations" placeholder="(e.g., 1)"  style="text-align:right" />
+                            <span class="input-group-btn">
+                            <div class="trigger rotate" style="cursor: pointer; width:25px; position:relative; top:1px; display: inline-block" data-toggle="collapse" href="#range_queries" role="button" aria-expanded="false">
+                                <div id="workload-trigger4" onclick="adjustGuide()">
+                                    <img class="img-responsive img-centered" style="width:25px" src="./images/arrow.png"/>
+                                </div>
+                            </div>
+                            </span>
+                        </div>
+                        <div id="range_queries" class="collapse multi-collapse">
                         <div class="input-group" style="display: none">
                             <span class="input-group-addon tooltip1"><span class="tooltip1 tooltiptext_input">Proportion of Short Range Lookup Operation</span>Short Range Lookup %</span>
-                            <input id="qS" type="text" class="form-control" aria-label="Proportion of short range lookup operation" placeholder=" qS (e.g., 1)"  style="text-align:right"/>
+                            <input id="qS" type="text" class="form-control" aria-label="Proportion of short range lookup operation" placeholder=" qS (e.g., 1)"  style="text-align:right" onchange="updateReadOnlyFields()"/>
                         </div>
 
                         <div class="input-group">
                             <span class="input-group-addon"><span data-tooltip="Proportion of Non-Empty Range Lookup Operation" data-tooltip-position="bottom"> Non-Empty Range Lookup % </span></span>
-                            <input id="qL" type="text" class="form-control" aria-label="Proportion of Non-Empty Range Lookup Operation" placeholder=" qL (e.g., 1)"  style="text-align:right"/>
+                            <input id="qL" type="text" class="form-control" aria-label="Proportion of Non-Empty Range Lookup Operation" placeholder=" qL (e.g., 1)"  style="text-align:right" onchange="updateReadOnlyFields()"/>
                         </div>
 
                         <div class="input-group">
                             <span class="input-group-addon"><span data-tooltip="Proportion of Empty Range Lookup Operation" data-tooltip-position="bottom"> Empty Range Lookup % </span></span>
-                            <input id="qEL" type="text" class="form-control" aria-label="Proportion of Empty Range Lookup Operation" placeholder=" qEL (e.g., 1)"  style="text-align:right"/>
+                            <input id="qEL" type="text" class="form-control" aria-label="Proportion of Empty Range Lookup Operation" placeholder=" qEL (e.g., 1)"  style="text-align:right" onchange="updateReadOnlyFields()"/>
                         </div>
 
                         <div class="input-group" style="display: none">
                             <span class="input-group-addon"><span data-tooltip="The number of unique entries in the target key range" data-tooltip-position="bottom"> Target Range Size </span></span>
                             <input id="s" type="number" class="form-control" aria-label="Proportion" placeholder=" s (e.g., 2048)"  style="text-align:right;"/>
                         </div>
+                        </div>
+
+
                         <!-- Message -->
                         <div class="guide_text_inputs" >
                             You can manually enter workload specifications or alternatively upload a workload file. A sample file is <a href="data/workloadSampleFile.txt" style="color: blue;" download>here</a>.
