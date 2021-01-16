@@ -45,7 +45,7 @@ var enable_backup = true;
 var enable_availability = false;
 var enable_durability = false;
 var enable_CLL = false;
-var enable_Rosetta = false;
+var enable_Rosetta = true;
 
 var cri_count=0;
 var cri_miss_count=0;
@@ -240,6 +240,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     var E = Variables.E;
     var F = Variables.F;
     var N = Variables.N;
+
     var B = Math.floor(Variables.B/E);
     var s = Variables.s;
 
@@ -369,6 +370,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                 read_cost = analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum);
                 long_scan_cost = analyzeLongScanCost(s, B, Z);
                 empty_long_scan_cost = analyzeLongScanCost(s, B, Z);
+
             }
             no_result_read_cost = analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum) - 1;
             rmw_cost = read_cost + 1.0/B;
@@ -462,6 +464,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                             read_cost = analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum);
                             long_scan_cost = analyzeLongScanCost(s, B, Z);
                             empty_long_scan_cost = long_scan_cost;
+
                         }
 
                         rmw_cost = update_cost + read_cost;
@@ -469,6 +472,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                         short_scan_cost = analyzeShortScanCost(B, T, K, Z, L, Y)
                         no_result_read_cost = read_cost - 1;
                         total_IO = workload*(insert_percentage*update_cost + v*read_cost + r*no_result_read_cost + rmw_percentage*rmw_cost + blind_update_percentage*blind_update_cost + qL*long_scan_cost + qEL*empty_long_scan_cost);
+
 
                         total_latency= total_IO / IOPS / 60 / 60 / 24; // Maybe divide this by 1024*1024*1024
 
@@ -491,6 +495,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                             Variables.short_scan_cost = short_scan_cost;
                             Variables.long_scan_cost = long_scan_cost;
                             Variables.empty_long_scan_cost = empty_long_scan_cost;
+
                             Variables.no_result_read_cost = no_result_read_cost;
                             Variables.total_cost = total_IO;
                             Variables.latency = total_latency;
@@ -546,6 +551,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
             empty_long_scan_cost = 1;
             no_result_read_cost = read_cost - 1;
             total_IO = workload*(insert_percentage*update_cost + v*read_cost + r*no_result_read_cost + rmw_percentage*rmw_cost + blind_update_percentage*blind_update_cost + qL*long_scan_cost + qEL*empty_long_scan_cost);
+
 
             total_latency = total_IO / IOPS / 60 / 60/ 24; // Maybe divide this by 1024*1024*1024
 
@@ -617,6 +623,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
         no_result_read_cost = read_cost - 1;
         total_IO = workload*(insert_percentage*update_cost + v*read_cost + r*no_result_read_cost + rmw_percentage*rmw_cost + blind_update_percentage*blind_update_cost + qL*long_scan_cost + qEL*empty_long_scan_cost);
 
+
         total_latency = total_IO / IOPS / 60 / 60/ 24; // Maybe divide this by 1024*1024*1024
 
         if (L == 0)
@@ -640,6 +647,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
             Variables.short_scan_cost = short_scan_cost;
             Variables.long_scan_cost = long_scan_cost;
             Variables.empty_long_scan_cost = empty_long_scan_cost;
+
             Variables.no_result_read_cost = no_result_read_cost;
             Variables.total_cost = total_IO;
             Variables.latency = total_latency;
@@ -823,6 +831,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     var Variables = parseInputVariables();
     var data;
     var N = Variables.N;
+
     var E = Variables.E;
     var F = Variables.F;
 
@@ -1023,6 +1032,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B);
         read_cost = analyzeReadCostAvgCase(FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data, E, Math.ceil(M_B), Math.ceil(E), compression_style);
         long_scan_cost = analyzeLongScanCostAvgCase(T, K, Z, L, Y, M, M_B, M_F, M_BF, data, s, B, E);
+
         if (existing_system == "WT") {
             read_cost = read_cost * B_TREE_CACHE_DISCOUNT_FACTOR;
         }
@@ -1030,6 +1040,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         update_cost = analyzeUpdateCost(B, T, K, Z, L, Y, M, M_F, M_B, M_F_HI, M_F_LO);
         read_cost = analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum);
         long_scan_cost = analyzeLongScanCost(s, B, Z);
+
     }
 
     if(existing_system == "rocks") {
@@ -1055,6 +1066,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     no_result_read_cost=0;//analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum)-1;
 
     total_IO = workload*(insert_percentage*update_cost + v*read_cost + r*no_result_read_cost + rmw_percentage*rmw_cost + blind_update_percentage*blind_update_cost + qL*long_scan_cost + qEL*empty_long_scan_cost);
+
 
     if(using_compression){
         total_IO = (insert_percentage * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + insert_percentage + r);
@@ -1088,6 +1100,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         Variables.total_cost = total_IO;
         Variables.latency = total_latency;
         Variables.cost = (monthly_storage_cost + monthly_mem_cost).toFixed(3);
+
         if (enable_SLA) {
             Variables.cost = (monthly_storage_cost + monthly_mem_cost + SLA_cost).toFixed(3);
         }
