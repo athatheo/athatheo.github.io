@@ -45,7 +45,7 @@ var enable_backup = true;
 var enable_availability = false;
 var enable_durability = false;
 var enable_CLL = false;
-var enable_Rosetta = false;
+var enable_Rosetta = true;
 
 var cri_count=0;
 var cri_miss_count=0;
