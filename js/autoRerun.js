@@ -1,22 +1,43 @@
 
 var timer=null;
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function initializeCompressionLibraries()
+{
+    compression_libraries=new Array();
+    for(var i=0;i<3;i++)
+        compression_libraries.push(new Compression_library());
+    /**************************************************** NO COMPRESSION  ****************************************************/
+    compression_libraries[0].compression_name = "NONE";
+    compression_libraries[0].get_overhead = 1;
+    compression_libraries[0].put_overhead = 1;
+    compression_libraries[0].space_reduction_ratio = 0.0;
+
+    /**************************************************** SNAPPY  ****************************************************/
+    compression_libraries[1].compression_name = "SNAPPY";
+    compression_libraries[1].get_overhead = 0.53;
+    compression_libraries[1].put_overhead = 8.21;
+    compression_libraries[1].space_reduction_ratio = 0.68;
+
+    /**************************************************** ZLIB  ****************************************************/
+    compression_libraries[2].compression_name = "ZLIB";
+    compression_libraries[2].get_overhead = 25.45;
+    compression_libraries[2].put_overhead = 31.26;
+    compression_libraries[2].space_reduction_ratio = 0.83;
+
+    console.log(compression_libraries);
+}
 
 function re_run(e, if_regenerate=true) {
-
-
-
-
     if(timer){
         clearTimeout(timer);
         timer = null;
     }
 
     var event = e || event;
-    // console.log(event)
 
     var x = event.which || event.keyCode;  // Use either which or keyCode, depending on browser support
-    // console.log(event.timeStamp)
-    // console.log(x)
 
     if (!((x==38 || x==40) && (event.target.id=="E" || event.target.id=="mbuffer" || event.target.id=="P" || event.target.id=="T")))
     {
@@ -95,7 +116,6 @@ function init(){
     $("#title").css("padding-top",($(window).height()/2-300)+"px");
     /*
         $( window ).resize(function() {
-            console.log($( window ).height());
 
             $("#title").css("padding-top",(($(window).height()-500)/2)+"px");
         });
@@ -106,7 +126,6 @@ function init(){
             $("#demo_body").css('transform','scale('+$( window ).width()/1500+') translateX('+((1400-$( window ).width())*(-1)/2)+'px)');
 
         $( window ).resize(function() {
-            console.log($( window ).width());
             if($( window ).width()<1400)
                 $("#demo_body").css('transform','scale('+$( window ).width()/1500+') translateX('+((1400-$( window ).width())*(-1)/2)+'px)');
             else
@@ -121,7 +140,6 @@ function init(){
 
     $(".rotate_2").click(function () {
         $(this).toggleClass("down");
-        console.log($(".SLA-tab").css("color"))
         if($(".SLA-tab").css("color")=="rgb(0, 0, 0)"){
             setTimeout('$(".SLA-tab").toggleClass("down")',1000);
         }else {
@@ -304,13 +322,12 @@ function init(){
     });
 
     $("#title_fonts").change(function () {
-        console.log($(this).val())
         $("#title_explanation").css("font-family",$(this).val())
     })
     /*
     $(window).scroll(function(){
         $(".navbar").css({opacity:Math.max(0,(500-$(document).scrollTop()+1000))/500});
-        console.log($(".navbar").css("opacity"));
+
         if($(".navbar").css("opacity")==0)
             $(".navbar").css('transform','scale(0)');
         else
@@ -546,7 +563,6 @@ function switchQuestion() {
                     var index;
                     for (var i = 0; i < result_array.length; i++) {
                         if (cost < result_array[i][0]) {
-                            console.log(cost, i, result_array[i][0])
                             if ((cost - result_array[i - 1][0]) > (result_array[i][0] - cost))
                                 index = i;
                             else
@@ -559,7 +575,6 @@ function switchQuestion() {
                     for (var i = index + 1; i < result_array.length; i++) {
                         if (result_array[i][1] < result_array[index][1] * (1 - input.value / 100)) {
                             document.getElementById("cost").value = Math.ceil(result_array[i][0]);
-                            console.log("rerun");
                             re_run(e,false);
                             break;
                         }
@@ -639,7 +654,6 @@ function switchStatistics() {
                     }
                     var max_num = Math.max(cloud_provider_num[0], cloud_provider_num[1], cloud_provider_num[2]);
                     var width = 100;
-                    console.log(max_num);
                     var div_result = document.getElementById("statistics_result");
                     for (var i = 0; i < 3; i++) {
                         var div_temp = document.createElement("div");
@@ -690,7 +704,6 @@ function switchStatistics() {
             old_length_3[i]=120 * result_array[i][0] / result_array[4][0];
             div_temp.append(bar);
             div_result.appendChild(div_temp);
-            console.log(old_length_3)
             $(bar).animate({width:old_length_3[i]+"px"},{speed:"slow"});
         }
     }
@@ -991,7 +1004,6 @@ function prune_cloud_provider(){
             $("#AWS_checkbox").prop("disabled", "true");
             $("#GCP_checkbox").prop("checked", false);
             $("#GCP_checkbox").prop("disabled", "true");
-            console.log(1);
         }
     }
     var flag=0;

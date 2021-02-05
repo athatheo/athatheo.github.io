@@ -3,13 +3,8 @@ $(".show-more a").each(function() {
     var $link = $(this);
     var $content = $link.parent().prev("span.text-content");
 
-    // console.log($link);
-
     var visibleHeight = $content[0].clientHeight;
     var actualHide = $content[0].scrollHeight - 1;
-
-    // console.log(actualHide);
-    // console.log(visibleHeight);
 
     if (actualHide > visibleHeight) {
         $link.show();

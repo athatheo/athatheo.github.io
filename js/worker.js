@@ -61,8 +61,6 @@ var cloud_provider_enable=[1,1,1];
 var B_TREE_CACHE_DISCOUNT_FACTOR = 0.1 // B-Tree cache discounting factor (set empirically)
 
 
-
-
 function Variables()
 {
     var N;
@@ -178,6 +176,8 @@ function initializeCompressionLibraries()
     compression_libraries[2].get_overhead = 25.45;
     compression_libraries[2].put_overhead = 31.26;
     compression_libraries[2].space_reduction_ratio = 0.83;
+
+    console.log(compression_libraries);
 }
 
 function initializeSLAFactors()
@@ -1150,13 +1150,6 @@ function buildContinuums(cloud_mode){
                                 temp = navigateDesignSpace(VMCombination, cloud_provider, n);
                                 if (temp.total_cost < Variables.total_cost)
                                     Variables = temp;
-                                /*
-                                temp=countContinuumForExistingDesign(VMCombination, cloud_provider, "rocks", n);
-                                if(temp.latency<rocks_Variables.latency)
-                                    rocks_Variables=temp;
-                                temp=countContinuumForExistingDesign(VMCombination, cloud_provider, "WT", n);
-                                if(temp.latency<WT_Variables.latency)
-                                    WT_Variables=temp;*/
                             }
                         }
                     }
@@ -1626,77 +1619,6 @@ function getC_ri(type, r,  i, M_B, T, K, Z, L, Y, E, int_M_B, int_E, compression
     }
 }
 
-function compare_array(a,b){
-    for(var j=0; j<a.length; j++){
-        if(a[j]>b[j]){
-            return 1;
-        }
-        if(b[j]>a[j]){
-            return -1;
-        }
-    }
-    return 0;
-}
-
-function bsearch_array(array,low,high,target)
-{
-    if(high<=0)return [0,0];
-    while(low <= high)
-    {
-        var mid = Math.floor((low + high)/2);
-        var flag=compare_array(array[mid].parameter ,target);
-        if (flag==1){
-            high = mid - 1;
-        }else if (flag==-1){
-            low = mid + 1;
-        }else{
-            return [1,mid];
-        }
-    }
-    return [0,low];
-}
-
-function getC_ri_1(type, r,  i, M_B, T, K, Z, L, Y, E, int_M_B, int_E)
-{
-    var array=[type, r,  i, int_M_B, T, K, Z, L, Y, int_E];
-    var flag_index= bsearch_array(cri_cache,0,cri_cache.length-1,array);
-
-    if(flag_index[0]==0) {
-        cri_count += 1;
-        var term1 = 1 - getAlpha_i(type, M_B, T, K, Z, L, Y, 0, E);
-
-        term1 *= (1 - getAlpha_i(type, M_B, T, K, Z, L, Y, -1, E));
-        var term2 = 1.0;
-        for (var h = 1; h < i; h++) {
-            term2 = term2 * Math.pow((1 - getAlpha_i(type, M_B, T, K, Z, L, Y, h, E)), K);
-        }
-        var term3 = Math.pow((1.0 - getAlpha_i(type, M_B, T, K, Z, L, Y, i, E)), r);
-        var term4 = 1;
-        for (var h = i + 1; h <= L - Y - 1; h++) {
-            term4 = term4 * Math.pow((1 - getAlpha_i(type, M_B, T, K, Z, L, Y, h, E)), K);
-        }
-        for (var h = L - Y; h <= L; h++) {
-            term4 = term4 * Math.pow((1 - getAlpha_i(type, M_B, T, K, Z, L, Y, h, E)), Z);
-        }
-        term4 = term4 * Math.pow((1 - getAlpha_i(type, M_B, T, K, Z, L, Y, i, E)), K - r);
-        term4 = 1 - term4;
-        var new_data={};
-        new_data.result=term1 * term2 * term3 * term4;
-        new_data.parameter=[type, r,  i, int_M_B, T, K, Z, L, Y, int_E];
-        if(cri_cache.length==0)
-            cri_cache[0]=new_data;
-        else {
-            for (var j = cri_cache.length-1; j >= flag_index[1]; j--) {
-                cri_cache[j + 1] = cri_cache[j];
-            }
-            cri_cache[flag_index[1]] = new_data;
-        }
-        return term1 * term2 * term3 * term4;
-    }else{
-        return flag_index[1].result;
-    }
-}
-
 function getD_ri( type, r, i, M_B, T, K, Z, L, Y, E, int_M_B, int_E, compression_style)
 {
     var a=(type*1+r*5+i*40+int_M_B+T*400+K*6000+Z*90000+L*230000+Y*710000+int_E*190007+K*r+i*T*4000+(int_E%(L*Y*19+T))*50000)%999999;
@@ -1759,30 +1681,6 @@ function getD_ri( type, r, i, M_B, T, K, Z, L, Y, E, int_M_B, int_E, compression
             return term1 * term2 * term3 * term4;
         }
     }
-}
-
-function getAlpha_0( type, M_B, E)
-{
-    if (type == 0) {
-        var val = M_B/(E*U);
-        if(val < 1)
-            return val;
-        return 1;
-    }
-    if (type == 1) {
-        var val = 1 - (p_put / U_1);
-        var EB = M_B / E;
-        val = pow(val, EB);
-        val = 1 - val;
-        return val;
-    }
-    if (type == 2) {
-        var val = (1-p_put) * M_B/(E*U_2);
-        if(val < 1)
-            return val;
-        return 1;
-    }
-    return -1;
 }
 
 function getAlpha_i(type, M_B, T, K, Z, L, Y, i, E)
@@ -1932,103 +1830,6 @@ function analyzeEmptyLongScanCost(K, Z, L, Y, N, M_BF, data, U) {
     return empty_long_scan_cost;
 }
 
-function logTotalCost(T, K, Z, L, Y, M, M_B, M_F, M_F_HI, M_F_LO, M_FP, M_BF, FPR_sum, update_cost, read_cost, short_scan_cost, long_scan_cost){
-    console.log("T="+T+",K="+K+",Z="+Z+",L="+L+",Y="+Y+",M="+M+",M_B="+M_B+",M_F="+M_F+",M_F_HI="+M_F_HI+",M_F_LO="+M_F_LO+",M_FP="+M_FP+",M_BF="+M_BF+",FPR_sum="+FPR_sum+",update_cost="+update_cost+",read_cost="+read_cost+",short_scan_cost="+short_scan_cost+",long_scan_cost="+long_scan_cost);
-}
-
-
-function setPricesBasedOnScheme(Variables, cloud_provider)
-{
-    total_budget = Variables.cost; //generateRandomBudget(MIN_BUDGET, MAX_BUDGET); for a month
-    var storage, MBps, monthly_storage_cost;
-    storage = (Variables.N*Variables.E)/(1024*1024*1024);
-    if(cloud_provider==undefined) {
-        cloud_provider = getCloudProvider("cloud-provider");
-    }
-    cloud_provider=2;
-    var B;
-    if(cloud_provider == 0)
-    {
-        MIN_RAM_SIZE = 16; // GB
-        RAM_BLOCK_COST = 0.091; // per RAM block per hour
-        MBps = 3500; // it is actually Mbps  for AWS
-        B = Math.floor(256*1024/Variables.E); //https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/memory-optimized-instances.html
-        IOPS = MBps*Math.pow(10,6)/(B*Variables.E);
-        if(IOPS > 15000)
-        {
-            IOPS = 15000;
-        }
-        if(storage > 75)
-        {
-            monthly_storage_cost = (storage-75)*0.1; // $0.1 per GB-month https://aws.amazon.com/ebs/pricing/
-            total_budget = total_budget - monthly_storage_cost;
-        }
-        else
-        {
-            monthly_storage_cost = storage*0.1; // $0.1 per GB-month https://aws.amazon.com/ebs/pricing/
-        }
-        network_bandwidth = 10.0*1024*1024*1024/8; //Gbps
-    }
-    if(cloud_provider == 1)
-    {
-        MIN_RAM_SIZE = 13; // GB
-        RAM_BLOCK_COST = 0.0745; // per RAM block per hour
-        MBps = read_percentage*720 + write_percentage*160; // taking average
-        B = 16*1024/(Variables.E);
-        IOPS = MBps*Math.pow(10,6)/(B*Variables.E);
-        if(IOPS > 30000)
-        {
-            IOPS = 30000;
-        }
-        monthly_storage_cost = storage*0.24;
-        total_budget = total_budget - monthly_storage_cost;
-    }
-    if(cloud_provider == 2)
-    {
-        MIN_RAM_SIZE = 16; // GB
-        RAM_BLOCK_COST = 0.0782; // per RAM block per hour
-        B = 8*1024/(Variables.E);
-        if(storage <= 32)
-        {
-            IOPS = 120;
-            monthly_storage_cost = 5.28;
-        }
-        else if(storage > 32 && storage <= 64)
-        {
-            IOPS = 240;
-            monthly_storage_cost = 10.21;
-        }
-        else if(storage > 64 && storage <= 128)
-        {
-            IOPS = 500;
-            monthly_storage_cost = 19.71;
-        }
-        else if(storage > 128 && storage <= 256)
-        {
-            IOPS = 1100;
-            monthly_storage_cost = 38.02;
-        }
-        else if(storage > 256 && storage <= 512)
-        {
-            IOPS = 2300;
-            monthly_storage_cost = 73.22;
-        }
-        else if(storage > 512 && storage <= 2000)
-        {
-            IOPS = 5000;
-            monthly_storage_cost = 135.17;
-        }
-        else
-        {
-            IOPS = 7500;
-            monthly_storage_cost = 259.05;
-        }
-        total_budget = total_budget - monthly_storage_cost;
-    }
-
-    return B;
-}
-
 function getStorageCost(Variables, cloud_provider)
 {
     var storage, MBps, monthly_storage_cost;
@@ -2124,33 +1925,6 @@ function getStorageCost(Variables, cloud_provider)
         }
     }
     return [B,monthly_storage_cost];
-}
-
-function setMaxRAMNeeded(Variables)
-{
-    if(total_budget <= 0)
-    {
-        console.log("\n************ INSUFFICIENT BUDGET FOR PRICING SCHEME *************\n");
-        return 0;
-    }
-    //int i=0;
-    var max_RAM_blocks = Math.floor((total_budget/(24*30*(RAM_BLOCK_COST))));
-    if(max_RAM_blocks < 0)
-    {
-        console.log("\n************ INSUFFICIENT BUDGET FOR PRICING SCHEME *************\n");
-        return 0;
-    }
-    var max_RAM_needed = ((Variables.N*Variables.E)/(1024.0*1024*1024)); // in GB
-    if(MIN_RAM_SIZE*max_RAM_blocks <= max_RAM_needed) // what I can purchase is less than or equal to what I need
-    {
-        max_RAM_purchased = MIN_RAM_SIZE*max_RAM_blocks;
-    }
-    else // what I can purchase is more than what I need
-    {
-        max_RAM_purchased = Math.ceil(max_RAM_needed/MIN_RAM_SIZE)*MIN_RAM_SIZE;
-    }
-    //printf("\nmax_RAM_needed:%f \tmax_RAM_purchased:%f", max_RAM_needed, max_RAM_purchased);
-    return 1;
 }
 
 function getCloudProvider(buttonName){
@@ -2287,9 +2061,6 @@ function initializeVMLibraries()
     VM_libraries[2].num_of_vcpu[4] = 20;
     VM_libraries[2].num_of_vcpu[5] = 32;
     VM_libraries[2].num_of_vcpu[6] = 64;
-
-    //printVMLibraries();
-    // console.log(VM_libraries)
     return VM_libraries;
 }
 
@@ -2311,29 +2082,6 @@ function getAllVMCombinations(cloud_provider,VM_libraries)
     }
     return VMCombinations;
 }
-
-function getBestDesignArray(result_array) {
-    var last_x = result_array[0][0];
-    var best_y = -1;
-    var best_design_index;
-    var bestDesignArray = new Array();
-    for (var i = 0; i < result_array.length; i++) {
-        if (result_array[i][0] == last_x) {
-            if (best_y == -1 || result_array[i][1] < best_y) {
-                best_y = result_array[i][1];
-                best_design_index = i;
-            }
-        } else {
-            best_y = result_array[i][1];
-            last_x = result_array[i][0];
-            bestDesignArray.push(result_array[best_design_index]);
-            best_design_index = i;
-        }
-    }
-    return bestDesignArray;
-}
-
-
 
 onmessage = function(e) {
     input=e.data.input;
