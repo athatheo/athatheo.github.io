@@ -430,7 +430,7 @@ function drawContinuumsNew(ContinuumArray){
     }
 
     best_array=getBestDesignEverArray(ContinuumArray);
-    //printBestArray(ContinuumArray);
+
     var chart_array=drawDesigns(best_array,cost);
 
 
