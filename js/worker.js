@@ -177,7 +177,6 @@ function initializeCompressionLibraries()
     compression_libraries[2].put_overhead = 31.26;
     compression_libraries[2].space_reduction_ratio = 0.83;
 
-    console.log(compression_libraries);
 }
 
 function initializeSLAFactors()
