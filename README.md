@@ -25,6 +25,8 @@ It has a major functionality in the code. It contains the functions responsible 
 the continuum building functions from `worker.js` as well as various functions that are responsible
 for creating the necessary elements in the website for the user to see results.
 
+
+
 ### autoRerun.js
 This file contains the necessary functions for initializing variables as well as drawing basic
 elements on the website.

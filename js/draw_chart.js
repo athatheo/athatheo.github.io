@@ -18,14 +18,14 @@ var p_put = 0.2; // fraction of the time that you call get on elements in U_1
 var U_1 = 100000;
 var U_2 = 1000000000000;
 // NOTE: it must always be true that (p_put / U_1) > (1 / U_2)
-var p_get = 0.7;
+var p_get = 0.05;
 
 var MIN_RAM_SIZE;
 var RAM_BLOCK_COST;
 var IOPS;
 var network_bandwidth;
 
-var machines = 2;
+var machines = 30;
 var workload_type = 0;
 
 var time_unit;
@@ -320,6 +320,7 @@ function parseInputVariables()
     parsedBoxes.r = parseFloat(document.getElementById("r").value);
     parsedBoxes.v = parseFloat(document.getElementById("v").value);
     parsedBoxes.qL = parseFloat(document.getElementById("qL").value);
+    parsedBoxes.qEL = parseFloat(document.getElementById("qEL").value);
     parsedBoxes.qS = parseFloat(document.getElementById("qS").value);
 
     parsedBoxes.query_count = parseInt(document.getElementById("query_count").value.replace(/\D/g,''), 10);
@@ -993,7 +994,6 @@ function drawDesigns(best_array, cost) {
         if(best_array[best_array.length-1][0]<cost) {
             design_1_index=best_array.length-1;
             cost_result_text[0]=("We found 1 storage engine design for you at "+cost+".<br><br>");
-            console.log(cost_result_text[0],cost);
             //drawDiagram(best_array[best_array.length-1][5], 'cost_result_diagram1');
             cost_result_text[1]="<b>Our Option:</b>"
             cost_result_text[2] = best_array[best_array.length - 1][5];

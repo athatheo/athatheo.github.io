@@ -574,6 +574,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
                 Variables.total_cost = total_IO;
                 Variables.latency = total_latency;
                 Variables.cost = (monthly_storage_cost + monthly_mem_cost).toFixed(3);
+
                 if (enable_SLA) {
                     Variables.cost = (monthly_storage_cost + monthly_mem_cost + SLA_cost).toFixed(3);
                 }
@@ -643,6 +644,7 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
             Variables.no_result_read_cost = no_result_read_cost;
             Variables.total_cost = total_IO;
             Variables.latency = total_latency;
+
             Variables.cost = (monthly_storage_cost + monthly_mem_cost).toFixed(3);
             if (enable_SLA) {
                 Variables.cost = (monthly_storage_cost + monthly_mem_cost + SLA_cost).toFixed(3);
