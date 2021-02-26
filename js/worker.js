@@ -46,6 +46,7 @@ var enable_availability = false;
 var enable_durability = false;
 var enable_CLL = false;
 var enable_Rosetta = true;
+var enable_parallelism = true;
 
 var cri_count=0;
 var cri_miss_count=0;
@@ -59,6 +60,21 @@ var cloud_provider_num=3;
 var cloud_provider_enable=[1,1,1];
 
 var B_TREE_CACHE_DISCOUNT_FACTOR = 0.1 // B-Tree cache discounting factor (set empirically)
+
+var prop_of_parallelizable_code_reads_Cosine = 0.9647;
+var prop_of_parallelizable_code_writes_Cosine = 0.797;
+
+var prop_of_parallelizable_code_reads_Cosine_LSH = 0.97;
+var prop_of_parallelizable_code_writes_Cosine_LSH = 0.9;
+
+var prop_of_parallelizable_code_reads_rocks = 0.9609;
+var prop_of_parallelizable_code_writes_rocks = 0.8017;
+
+var prop_of_parallelizable_code_reads_FASTER = 0.9922;
+var prop_of_parallelizable_code_writes_FASTER = 0.9761;
+
+var prop_of_parallelizable_code_reads_WT = 0.94;
+var prop_of_parallelizable_code_writes_WT = 0.25;
 
 
 function Variables()
@@ -678,7 +694,27 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
         Variables.if_classic=true;
     if(Variables.data_structure=="LSH"||Variables.data_structure=="B-tree")
         Variables.if_classic=true;
+    if(enable_parallelism){
+        Variables.latency  = speedup(Variables);
+    }
     return Variables;
+}
+
+function speedup(Variables){
+    var overall_prop_parallelizable_code = 1;
+    var speedup_factor;
+    if (enable_parallelism){
+        if(Variables.data_structure=="LSH")
+        {
+            overall_prop_parallelizable_code = (Variables.v + Variables.rmw_percentage + Variables.blind_update_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_Cosine_LSH + Variables.insert_percentage*prop_of_parallelizable_code_writes_Cosine_LSH;
+        }
+        else
+        {
+            overall_prop_parallelizable_code = (Variables.v + Variables.rmw_percentage + Variables.blind_update_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_Cosine + Variables.insert_percentage*prop_of_parallelizable_code_writes_Cosine;
+        }
+    }
+    speedup_factor = 1.0 / (1.0 - (overall_prop_parallelizable_code * (1.0 - (1.0/Variables.Vcpu_num))));
+    return Variables.latency/speedup_factor;
 }
 
 function fitsInMemory(M, data, E){
