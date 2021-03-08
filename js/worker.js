@@ -76,6 +76,7 @@ var prop_of_parallelizable_code_writes_FASTER = 0.9761;
 var prop_of_parallelizable_code_reads_WT = 0.94;
 var prop_of_parallelizable_code_writes_WT = 0.25;
 
+var overall_prop_parallelizable_code = 1;
 
 function Variables()
 {
@@ -695,14 +696,35 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     if(Variables.data_structure=="LSH"||Variables.data_structure=="B-tree")
         Variables.if_classic=true;
     if(enable_parallelism){
+        setOverallPropParallelizableCode(Variables);
         Variables.latency  = speedup(Variables);
     }
     return Variables;
 }
 
-function speedup(Variables){
-    var overall_prop_parallelizable_code = 1;
-    var speedup_factor;
+function setOverallPropParallelizableCodeForExistingSystem(Variables, existing_system) {
+    if(enable_parallelism)
+    {
+            if(existing_system == "rocks") // RocksDB
+            {
+                overall_prop_parallelizable_code = ((Variables.v + Variables.rmw_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_rocks) + ((Variables.insert_percentage + Variables.blind_update_percentage)*prop_of_parallelizable_code_writes_rocks);
+            }
+            else if (existing_system != "FASTER" && existing_system != "FASTER_H") // Any FASTER version
+            {
+                overall_prop_parallelizable_code = ((Variables.v + Variables.rmw_percentage + Variables.blind_update_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_FASTER) + (Variables.insert_percentage*prop_of_parallelizable_code_writes_FASTER);
+            }
+            else if(existing_system=="WT") // WiredTiger
+            {
+                overall_prop_parallelizable_code = ((Variables.v + Variables.rmw_percentage + Variables.blind_update_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_WT) + (Variables.insert_percentage*prop_of_parallelizable_code_writes_WT);
+            }
+    }
+    else
+    {
+        overall_prop_parallelizable_code = 1.0;
+    }
+}
+
+function setOverallPropParallelizableCode(Variables){
     if (enable_parallelism){
         if(Variables.data_structure=="LSH")
         {
@@ -712,7 +734,13 @@ function speedup(Variables){
         {
             overall_prop_parallelizable_code = (Variables.v + Variables.rmw_percentage + Variables.blind_update_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_Cosine + Variables.insert_percentage*prop_of_parallelizable_code_writes_Cosine;
         }
+    } else {
+        overall_prop_parallelizable_code = 1;
     }
+}
+
+function speedup(Variables){
+    var speedup_factor;
     speedup_factor = 1.0 / (1.0 - (overall_prop_parallelizable_code * (1.0 - (1.0/Variables.Vcpu_num))));
     return Variables.latency/speedup_factor;
 }
@@ -961,8 +989,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     data=max_RAM_purchased*Variables.N/mem_sum;
     M_BC=0;
     var M_B;
-    existing_systems = existing_system;
-    cost = monthly_mem_cost + monthly_storage_cost;
+
     var M = max_RAM_purchased * 1024 * 1024 * 1024;
     var workload = max_RAM_purchased*query_count/mem_sum;
 
@@ -1062,8 +1089,8 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     if(existing_system=="WT")
         Y = L;
 
-
-
+    cost = (monthly_storage_cost + monthly_mem_cost).toFixed(3);
+    existing_systems = existing_system;
 
     if(scenario=='A'){
         update_cost = analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B);
@@ -1072,6 +1099,9 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
 
         if (existing_system == "WT") {
             read_cost = read_cost * B_TREE_CACHE_DISCOUNT_FACTOR;
+        }
+        if (cost>3180&&cost<3300&&(existing_systems=="WT")) {
+            console.log(read_cost);
         }
     }else {
         update_cost = analyzeUpdateCost(B, T, K, Z, L, Y, M, M_F, M_B, M_F_HI, M_F_LO);
@@ -1113,7 +1143,9 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     if(L==0)
         total_latency=0;
 
+
     if (total_latency < best_latency || best_latency < 0) {
+        best_latency = total_latency;
         Variables.K = K;
         Variables.T = T;
         Variables.L = L;
@@ -1150,6 +1182,13 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         if ((existing_system == 'FASTER' || existing_system == 'FASTER_H') && total_IO == 0) {
             Variables.total_cost = 0.1;
         }
+    }
+    if(enable_parallelism){
+        setOverallPropParallelizableCodeForExistingSystem(Variables,existing_system);
+        Variables.latency  = speedup(Variables);
+    }
+    if (existing_system=="WT"){
+        //console.log(cost, IOPS, total_IO,read_cost, update_cost);
     }
     return Variables;
 }
@@ -1296,6 +1335,7 @@ function correctContinuum(result_array) {
     final_array.sort(function (a,b) {
         return a[0]-b[0];
     })
+    console.log(final_array);
     return final_array;
 }
 
@@ -1467,7 +1507,7 @@ function analyzeUpdateCostAvgCase(T, K, Z, L, Y, M, M_F, M_B, E, B){
     var update_cost;
     if(Z == 0) // LSH-table append-only
     {
-        var scale_up = 1.8;
+        var scale_up = 1.5;
         var term1;
         var q = Math.pow((1.0 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 1, E)), K);
         var c = (1 - q)*(1 - getAlpha_i(workload_type, M_B, T, K, Z, L, Y, 0, E));
@@ -1552,7 +1592,6 @@ function aggregateAvgCase(type, FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data,
 
     term1 = c/q;
     FPR_sum = Math.exp((-M_BF*8/data)*Math.pow((Math.log(2)/Math.log(2.7182)), 2) * Math.pow(T, Y)) * Math.pow(Z, (T-1)/T) * Math.pow(K, 1/T) * Math.pow(T, (T/(T-1)))/(T-1);
-
     for(var i = 1;i<=L-Y-1;i++)
     {
         p_i = (FPR_sum)*(T-1)/(T*K*Math.pow(T, L-Y-i));
@@ -1574,13 +1613,17 @@ function aggregateAvgCase(type, FPR_sum, T, K, Z, L, Y, M, M_B, M_F, M_BF, data,
             p_i = 1;
         }
         term3_2 = 0.0;
+
         if(p_i>0) {
             for (var r = 1; r <= Z; r++) {
                 term3_2 = term3_2 + getD_ri(type, r, i, M_B, T, K, Z, L, Y, E, int_M_B, int_E, compression_style) / q;
             }
+
             term3 = term3 + (p_i * term3_2);
         }
+
     }
+
     return term1 + term2 + term3;
 }
 
@@ -1592,11 +1635,13 @@ function getcq(type, T, K, Z, L, Y, M_B, E)
     {
         q = q * Math.pow((1.0 - getAlpha_i(type, M_B, T, K, Z, L, Y, i, E)), K);
     }
-    for(var i=L-Y;i<=L;i++)
+    var hot_level_boundary = L - Y > 1 ? L - Y : 1
+    for(var i=hot_level_boundary;i<=L;i++)
     {
         q = q * Math.pow((1.0 - getAlpha_i(type, M_B, T, K, Z, L, Y, i, E)), Z);
     }
     c = (1 - getAlpha_i(type, M_B, T, K, Z, L, Y, -1, E)) * (1 - (q))*(1 - getAlpha_i(type, M_B, T, K, Z, L, Y, 0, E));
+
     q = 1 - (q)*(1 - getAlpha_i(type, M_B, T, K, Z, L, Y, 0, E));
     return [c,q];
 }
@@ -1728,6 +1773,7 @@ function getD_ri( type, r, i, M_B, T, K, Z, L, Y, E, int_M_B, int_E, compression
             dri_cache[compression_style][a]={};
             dri_cache[compression_style][a].result=term1 * term2 * term3 * term4;
             dri_cache[compression_style][a].parameter=type+r+i+T+K+Z+L+Y;
+
             return term1 * term2 * term3 * term4;
         }
     }
