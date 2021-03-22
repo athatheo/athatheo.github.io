@@ -32,6 +32,12 @@ var time_unit;
 var M_BC;
 
 var global_continuums_array;
+var global_cosine_variables_array;
+var global_rocks_variables_array;
+var global_WT_variables_array;
+var global_faster_variables_array;
+var global_faster_h_variables_array;
+
 var global_progress;
 var global_input=0;
 var if_display = 0;
@@ -329,6 +335,11 @@ function parseInputVariables()
     return parsedBoxes;
 }
 
+/**
+ * Starts the Web Worker that connects this file with worker.js, to start building the 5 continuums.
+ * @param if_regenerate
+ * @returns {number}
+ */
 function drawContinuumsMultithread(if_regenerate=true) {
     var cloud_provider=document.getElementById("cloud-provider").selectedIndex;
     if(if_regenerate) {
@@ -366,16 +377,19 @@ function drawContinuumsMultithread(if_regenerate=true) {
                     $("#loading_percentage").html(e.data);
                 } else {
                     var ContinuumArray = e.data;
-                    global_continuums_array = ContinuumArray;
-                    drawContinuumsNew(ContinuumArray);
+                    global_continuums_array = ContinuumArray[0];
+                    global_cosine_variables_array = ContinuumArray[1];
+                    global_rocks_variables_array = ContinuumArray[2];
+                    global_WT_variables_array = ContinuumArray[3];
+                    global_faster_variables_array = ContinuumArray[4];
+                    global_faster_h_variables_array = ContinuumArray[5];
+                    drawContinuumsNew(global_continuums_array);
                     displayCharts();
                     drawStats();
                     worker_running=false;
                 }
-
             }
         }
-
     }
     else {
         var ContinuumArray = global_continuums_array;
@@ -383,7 +397,6 @@ function drawContinuumsMultithread(if_regenerate=true) {
         console.log("not generate");
         drawContinuumsNew(ContinuumArray);
     }
-
 }
 
 function drawContinuumsNew(ContinuumArray){
@@ -403,9 +416,7 @@ function drawContinuumsNew(ContinuumArray){
         legend_array[i].marker.color=colors[i];
         legend_array[i].name=cloud_array[i];
     }
-
     document.getElementById("chart_style").value="1";
-
 
     var cost=parseInt(document.getElementById("cost").value.replace(/\D/g,''), 10)+budget_change;
     var latency=parseFloat(document.getElementById("latency").value);
@@ -413,12 +424,8 @@ function drawContinuumsNew(ContinuumArray){
     var cloud_provider=document.getElementById("cloud-provider").selectedIndex;
 
     var best_array=ContinuumArray;
-    var latency_array=new Array();
-    var cost_array=new Array();
     var info_array=new Array();
     for(var i=0;i<best_array.length;i++){
-        cost_array.push(best_array[i][0]);
-        latency_array.push(best_array[i][1]);
         info_array.push(best_array[i][4]);
         if(i<best_array.length/10){
             for(var j=0;j<3;j++){
@@ -429,12 +436,16 @@ function drawContinuumsNew(ContinuumArray){
         }
     }
 
+    /**
+     * Not sure if this process is needed, I think the correct continuum functionality in the worker.js does the job
+     */
+    var rocks_best_array = getBestExistingDesignArray(global_rocks_variables_array);
+    var WT_best_array = getBestExistingDesignArray(global_WT_variables_array);
+    var FASTER_best_array = getBestExistingDesignArray(global_faster_variables_array);
+    var FASTER_H_best_array = getBestExistingDesignArray(global_faster_h_variables_array);
+
     best_array=getBestDesignEverArray(ContinuumArray);
-    var chart_array=drawDesigns(best_array,cost);
-
-
-
-
+    var chart_array=drawDesigns(best_array,cost,rocks_best_array,WT_best_array,FASTER_best_array,FASTER_H_best_array);
 
 
     $("#chart_style").change(function(){
@@ -468,7 +479,6 @@ function drawContinuumsNew(ContinuumArray){
                 }
             }
         })
-
         $("#diagram6").html("<div style=\"font-size:18px;text-align: center;position: relative;top: 64px;\">Hover along the continuum to learn more.</span>");
         $("#hoverinfo6").html("");
         $("#continuums_bar").html("");
@@ -515,6 +525,14 @@ function drawContinuumsNew(ContinuumArray){
 
 }
 
+function getCol(matrix, col){
+    var column = [];
+    for(var i=0; i<matrix.length; i++){
+        column.push(matrix[i][col]);
+    }
+    return column; // return column data..
+}
+
 function addTextAndBar(result_div,Variables,w,h){
     removeAllChildren(result_div);
     var div_tmp = document.createElement("div");
@@ -541,6 +559,13 @@ function multiplyArray(array, multiplier){
     }
     return result;
 }
+
+/**
+ * Takes input of time and translates it to days/hours/mins, etc, while changing the globar variable of
+ * the time unit
+ * @param array
+ * @returns {any[]}
+ */
 function fixTimeArray(array){
     var result=array;
     time_unit="(day)"
@@ -964,7 +989,14 @@ function drawStats() {
 
 }
 
-function drawDesigns(best_array, cost) {
+/**
+ * This function loops through the cleaned continuums, finds the entry that is closer to the budget and
+ * adds the responding values to html.
+ * @param best_array
+ * @param cost
+ * @returns {any[]}
+ */
+function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, FASTER_best_array, FASTER_H_best_array) {
     var cost_result_text=new Array();
     var chart_start_index;
     var chart_end_index;
@@ -988,8 +1020,6 @@ function drawDesigns(best_array, cost) {
         document.getElementById("cost_result_p1").innerHTML=cost_result_text[0];
     }
     else{
-        printBestArray(best_array);
-
         if(best_array[best_array.length-1][0]<cost) {
             design_1_index=best_array.length-1;
             cost_result_text[0]=("We found 1 storage engine design for you at "+cost+".<br><br>");
@@ -1021,7 +1051,7 @@ function drawDesigns(best_array, cost) {
                         cost_result_text[0] = ("<i>We found 2 storage engine designs for you at $" + cost + ".</i><br><br>");
                     }
                     cost_result_text[1] = "<b>Cosine configuration 1<br>saves money</b>"
-                    cost_result_text[2] = best_array[i - 1][5];
+                    cost_result_text[2] = best_array[design_1_index][5];
                     cost_result_text[3] = "<b>Cosine configuration 2<br>saves time</b>";
                     cost_result_text[4] = best_array[design_2_index][5];
                     chart_start_index = Math.floor(i - best_array.length / 5);
@@ -1163,18 +1193,6 @@ function drawDesigns(best_array, cost) {
     global_index=design_1_index+flag;
     var chart_array=cutArray(best_array,chart_start_index,chart_end_index);
     return chart_array;
-}
-
-function printBestArray(best_array) {
-    for (var i = 0; i < best_array.length; i++){
-        //console.log("Cost: "+best_array[i][0] + " latency: "+best_array[i][1] + " Provider Name: "+best_array[i][3]);
-        //console.log("Rocks Variables: "+best_array[i][0]+" "+best_array[i][7].cost+ " " + best_array[i][7].cloud_provider + " " + best_array[i][7].latency*24);
-            //"Cost: "+best_array[i][0] + " latency: "+best_array[i][1] + " Provider Name: "+best_array[i][3]);
-        // + " VMCombination: "+best_array[i][2] +
-        //     + " Provider Name: "+best_array[i][3] + " Info: "+best_array[i][4] + " Memory footprint: " +best_array[i][5] +
-        //     + " Variables: " +best_array[i][6] +  " Rocks Variables: "+best_array[i][7] +  " WT Variables: " +best_array[i][8] +
-        //     + " Faster Variables: " +best_array[i][9] +  " fasterh Variables: " +best_array[i][10]);
-    }
 }
 
 function drawDiagram(Variables, id){
@@ -1805,6 +1823,40 @@ function fixTime(time){
         return time.toFixed(3)+" hour"
     }
     return time.toFixed(3)+" day"
+}
+
+function getBestExistingDesignArray(Variables_array){
+    var i = 0;
+    while (Variables_array[i]==-1){
+        i++;
+    }
+    var temp = i;
+    var last_x = Variables_array[temp].cost;
+    var best_y = -1;
+    var best_design_index;
+    var best_y_ever = -1;
+    var bestDesignArray = new Array();
+    for (i = temp; i < Variables_array.length; i++) {
+        if (Variables_array[i].cost == last_x) {
+            if (best_y == -1 || Variables_array[i].latency < best_y) {
+                best_y = Variables_array[i].latency;
+                best_design_index = i;
+            }
+        } else {
+            best_y = Variables_array[i].latency;
+            last_x = Variables_array[i].cost;
+            if(Variables_array[best_design_index].latency<best_y_ever||best_y_ever==-1) {
+                bestDesignArray.push(Variables_array[best_design_index]);
+                best_y_ever=Variables_array[best_design_index].latency;
+            }
+            best_design_index = i;
+        }
+    }
+    if(Variables_array[best_design_index].latency<best_y_ever||best_y_ever==-1) {
+        bestDesignArray.push(Variables_array[best_design_index]);
+        best_y_ever=Variables_array[best_design_index].latency;
+    }
+    return bestDesignArray;
 }
 
 function getBestDesignEverArray(result_array) {
