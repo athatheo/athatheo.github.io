@@ -32,7 +32,6 @@ var time_unit;
 var M_BC;
 
 var global_continuums_array;
-var global_cosine_variables_array;
 var global_rocks_variables_array;
 var global_WT_variables_array;
 var global_faster_variables_array;
@@ -88,6 +87,11 @@ var cloud_array=[
 ];
 
 var global_index;
+var global_rocks_index;
+var global_WT_index;
+var global_faster_index;
+var global_faster_h_index;
+
 
 
 function Chart(){
@@ -378,11 +382,10 @@ function drawContinuumsMultithread(if_regenerate=true) {
                 } else {
                     var ContinuumArray = e.data;
                     global_continuums_array = ContinuumArray[0];
-                    global_cosine_variables_array = ContinuumArray[1];
-                    global_rocks_variables_array = ContinuumArray[2];
-                    global_WT_variables_array = ContinuumArray[3];
-                    global_faster_variables_array = ContinuumArray[4];
-                    global_faster_h_variables_array = ContinuumArray[5];
+                    global_rocks_variables_array = ContinuumArray[1];
+                    global_WT_variables_array = ContinuumArray[2];
+                    global_faster_variables_array = ContinuumArray[3];
+                    global_faster_h_variables_array = ContinuumArray[4];
                     drawContinuumsNew(global_continuums_array);
                     displayCharts();
                     drawStats();
@@ -439,12 +442,16 @@ function drawContinuumsNew(ContinuumArray){
     /**
      * Not sure if this process is needed, I think the correct continuum functionality in the worker.js does the job
      */
-    var rocks_best_array = getBestExistingDesignArray(global_rocks_variables_array);
-    var WT_best_array = getBestExistingDesignArray(global_WT_variables_array);
-    var FASTER_best_array = getBestExistingDesignArray(global_faster_variables_array);
-    var FASTER_H_best_array = getBestExistingDesignArray(global_faster_h_variables_array);
+    global_rocks_variables_array = getBestExistingDesignArray(global_rocks_variables_array);
+    global_WT_variables_array = getBestExistingDesignArray(global_WT_variables_array);
+    global_faster_variables_array = getBestExistingDesignArray(global_faster_variables_array);
+    global_faster_h_variables_array = getBestExistingDesignArray(global_faster_h_variables_array);
+    var rocks_best_array = global_rocks_variables_array;
+    var WT_best_array = global_WT_variables_array;
+    var FASTER_best_array = global_faster_variables_array;
+    var FASTER_H_best_array = global_faster_h_variables_array;
 
-    best_array=getBestDesignEverArray(ContinuumArray);
+    best_array=getBestDesignEverArray(global_continuums_array);
     var chart_array=drawDesigns(best_array,cost,rocks_best_array,WT_best_array,FASTER_best_array,FASTER_H_best_array);
 
 
@@ -811,9 +818,11 @@ function drawStats() {
     var query_IO = [best_array[global_index][5].read_cost, best_array[global_index][5].update_cost];
 
     var improvement_array=new Array();
-    for(var i=0;i<4;i++) {
-        improvement_array.push((best_array[global_index][7+i].latency-best_array[global_index][1])/(best_array[global_index][7+i].latency)*100);
-    }
+    improvement_array.push((global_rocks_variables_array[global_rocks_index].latency-best_array[global_index][1])/(global_rocks_variables_array[global_rocks_index].latency)*100);
+    improvement_array.push((global_WT_variables_array[global_WT_index].latency-best_array[global_index][1])/(global_WT_variables_array[global_WT_index].latency)*100);
+    improvement_array.push((global_faster_variables_array[global_faster_index].latency-best_array[global_index][1])/(global_faster_variables_array[global_faster_index].latency)*100);
+    improvement_array.push((global_faster_h_variables_array[global_faster_h_index].latency-best_array[global_index][1])/(global_faster_h_variables_array[global_faster_h_index].latency)*100);
+
     var hybrid_legend={x: [null],
         y: [null],
         marker: { size: 7, symbol: 'circle', color: 'rgb(130,195,245)'},
@@ -996,7 +1005,7 @@ function drawStats() {
  * @param cost
  * @returns {any[]}
  */
-function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, FASTER_best_array, FASTER_H_best_array) {
+function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, faster_best_array, faster_h_best_array) {
     var cost_result_text=new Array();
     var chart_start_index;
     var chart_end_index;
@@ -1005,6 +1014,7 @@ function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, FASTER_b
     var design_2_index;
     var max_mem;
     var switch_option;
+    var rocks_index_1, rocks_index_2, WT_index_1,WT_index_2, faster_index_1, faster_index_2, faster_h_index_1, faster_h_index_2;
     if(cost<best_array[0][0]) {
         cost_result_text[0] = "Sorry, you have insufficient budget. The minimum budget to run the workload is $"+best_array[0][0]+".<br>";
         chart_start_index=0;
@@ -1022,6 +1032,12 @@ function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, FASTER_b
     else{
         if(best_array[best_array.length-1][0]<cost) {
             design_1_index=best_array.length-1;
+            rocks_index_1 = rocks_best_array.length - 1;
+            WT_index_1 = WT_best_array.length - 1;
+            faster_index_1 = faster_best_array.length - 1;
+            faster_h_index_1
+                = faster_h_best_array.length - 1;
+
             cost_result_text[0]=("We found 1 storage engine design for you at "+cost+".<br><br>");
             //drawDiagram(best_array[best_array.length-1][5], 'cost_result_diagram1');
             cost_result_text[1]="<b>Our Option:</b>"
@@ -1076,6 +1092,20 @@ function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, FASTER_b
                     break;
                 }
             }
+            var cost1 = best_array[design_1_index][0];
+            var cost2 = best_array[design_2_index][0];
+            var temp = getIndex(cost1, cost2, rocks_best_array);
+            rocks_index_1 = temp[0];
+            rocks_index_2 = temp[1];
+            temp = getIndex(cost1, cost2, WT_best_array);
+            WT_index_1 = temp[0];
+            WT_index_2 = temp[1];
+            temp = getIndex(cost1, cost2, faster_best_array);
+            faster_index_1 = temp[0];
+            faster_index_2 = temp[1];
+            temp = getIndex(cost1, cost2, faster_h_best_array);
+            faster_h_index_1 = temp[0];
+            faster_h_index_2 = temp[1];
         }
         document.getElementById("cost_result_p1").innerHTML=cost_result_text[0];
 
@@ -1101,30 +1131,30 @@ function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, FASTER_b
         if( cost_result_text[0] != "Cost is too little"){
 
             if(cost_result_text[0] == "We found 1 storage engine design for you at "+cost+".<br><br>"){ 
-                if(best_array[design_1_index][7]!=-1) {
+                if(rocks_index_1!=-1) {
                     document.getElementById("cost_result_p6").innerHTML = "<b>RocksDB<br><br></b>";
-                    outputParameters(best_array[design_1_index][7], "cost_result_p7", l1);
+                    outputParameters(rocks_best_array[rocks_index_1], "cost_result_p7", l1);
                 }else{
                     document.getElementById("cost_result_p6").innerHTML = "<b>RocksDB: Not Enough Memory<br><br></b>";
                     removeAllChildren(document.getElementById("cost_result_p7"));
                 }
-                if(best_array[design_1_index][8]!=-1) {
+                if(WT_index_1!=-1) {
                     document.getElementById("cost_result_p8").innerHTML = "<b>WiredTiger<br><br></b>";
-                    outputParameters(best_array[design_1_index][8], "cost_result_p9", l1);
+                    outputParameters(WT_best_array[WT_index_1], "cost_result_p9", l1);
                 }else{
                     document.getElementById("cost_result_p8").innerHTML = "<b>WiredTiger: Not Enough Memory<br><br></b>";
                     removeAllChildren(document.getElementById("cost_result_p9"));
                 }
-                if(best_array[design_1_index][9]!=-1) {
+                if(faster_index_1!=-1) {
                     document.getElementById("cost_result_p10").innerHTML = "<b>FASTER <br>(append-only logs)<br></b>";
-                    outputParameters(best_array[design_1_index][9], "cost_result_p11", l1);
+                    outputParameters(faster_best_array[faster_index_1], "cost_result_p11", l1);
                 }else{
                     document.getElementById("cost_result_p10").innerHTML = "<b>FASTER-A: Not Enough Memory<br><br></b>";
                     removeAllChildren(document.getElementById("cost_result_p11"));
                 }
-                if(best_array[design_1_index][10]!=-1) {
+                if(faster_h_index_1!=-1) {
                     document.getElementById("cost_result_p12").innerHTML = "<b>FASTER <br>(hybrid logs)<br></b>";
-                    outputParameters(best_array[design_1_index][10], "cost_result_p13", l1);
+                    outputParameters(faster_h_best_array[faster_h_index_1], "cost_result_p13", l1);
                 }else{
                     document.getElementById("cost_result_p12").innerHTML = "<b>FASTER-H: Not Enough Memory<br><br></b>";
                     removeAllChildren(document.getElementById("cost_result_p13"));
@@ -1132,56 +1162,56 @@ function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, FASTER_b
 
             } else {
                 //document.getElementById("cost_result_p6").setAttribute("style","position:relative;top:0px");
-                if(best_array[design_1_index][7]!=-1) {
+                if(rocks_index_1!=-1) {
                     document.getElementById("cost_result_p6").innerHTML = "<b>RocksDB<br><br></b>";
-                    if((cost-best_array[design_1_index][7].cost)>(best_array[design_1_index+1][7].cost-cost)) {
-                        outputParameters(best_array[design_1_index+1][7], "cost_result_p7", l2);
-                        outputNote(best_array[design_1_index][7], "cost_result_p7");
+                    if((cost-rocks_best_array[rocks_index_1].cost)>(rocks_best_array[rocks_index_2].cost-cost)) {
+                        outputParameters(rocks_best_array[rocks_index_2], "cost_result_p7", l2);
+                        outputNote(rocks_best_array[rocks_index_1], "cost_result_p7");
                         flag=1;
                     }else{
-                        outputParameters(best_array[design_1_index][7], "cost_result_p7", l1);
-                        outputNote(best_array[design_1_index+1][7], "cost_result_p7");
+                        outputParameters(rocks_best_array[rocks_index_1], "cost_result_p7", l1);
+                        outputNote(rocks_best_array[rocks_index_2], "cost_result_p7");
 
                     }
                 }else{
                     document.getElementById("cost_result_p6").innerHTML = "<b>RocksDB: Not Enough Memory<br><br></b>";
                     removeAllChildren(document.getElementById("cost_result_p7"));
                 }
-                if(best_array[design_1_index][8]!=-1) {
+                if(WT_index_1!=-1) {
                     document.getElementById("cost_result_p8").innerHTML = "<b>WiredTiger<br><br></b>";
-                    if((cost-best_array[design_1_index][8].cost)>(best_array[design_1_index+1][8].cost-cost)) {
-                        outputParameters(best_array[design_1_index+1][8], "cost_result_p9", l2);
-                        outputNote(best_array[design_1_index][8], "cost_result_p9");
+                    if((cost-WT_best_array[WT_index_1].cost)>(WT_best_array[WT_index_2].cost-cost)) {
+                        outputParameters(WT_best_array[WT_index_2], "cost_result_p9", l2);
+                        outputNote(WT_best_array[WT_index_1], "cost_result_p9");
                     }else{
-                        outputParameters(best_array[design_1_index][8], "cost_result_p9", l1);
-                        outputNote(best_array[design_1_index+1][8], "cost_result_p9");
+                        outputParameters(WT_best_array[WT_index_1], "cost_result_p9", l1);
+                        outputNote(WT_best_array[WT_index_2], "cost_result_p9");
                     }
                 }else{
                     document.getElementById("cost_result_p8").innerHTML = "<b>WiredTiger: Not Enough Memory<br><br></b>";
                     removeAllChildren(document.getElementById("cost_result_p9"));
                 }
-                if(best_array[design_1_index][9]!=-1) {
+                if(faster_index_1!=-1) {
                     document.getElementById("cost_result_p10").innerHTML = "<b>FASTER <br>(append-only logs)<br></b>";
-                    if((cost-best_array[design_1_index][9].cost)>(best_array[design_1_index+1][9].cost-cost)) {
-                        outputParameters(best_array[design_1_index+1][9], "cost_result_p11", l2);
-                        outputNote(best_array[design_1_index][9], "cost_result_p11");
+                    if((cost-faster_best_array[faster_index_1].cost)>(best_array[faster_index_2].cost-cost)) {
+                        outputParameters(faster_best_array[faster_index_2], "cost_result_p11", l2);
+                        outputNote(faster_best_array[faster_index_1], "cost_result_p11");
                     }else{
-                        outputParameters(best_array[design_1_index][9], "cost_result_p11", l1);
-                        outputNote(best_array[design_1_index+1][9], "cost_result_p11");
+                        outputParameters(faster_best_array[faster_index_1], "cost_result_p11", l1);
+                        outputNote(faster_best_array[faster_index_2], "cost_result_p11");
                     }
                 }else{
                     document.getElementById("cost_result_p10").innerHTML = "<b>FASTER-A: Not Enough Memory<br><br></b>";
                     removeAllChildren(document.getElementById("cost_result_p11"));
                 }
 
-                if(best_array[design_1_index][10]!=-1) {
+                if(faster_h_index_1!=-1) {
                     document.getElementById("cost_result_p12").innerHTML = "<b>FASTER <br>(hybrid logs)<br></b>";
-                    if((cost-best_array[design_1_index][10].cost)>(best_array[design_1_index+1][10].cost-cost)) {
-                        outputParameters(best_array[design_1_index+1][10], "cost_result_p13", l2);
-                        outputNote(best_array[design_1_index][10], "cost_result_p13");
+                    if((cost-faster_h_best_array[faster_h_index_1].cost)>(faster_h_best_array[faster_h_index_2].cost-cost)) {
+                        outputParameters(faster_h_best_array[faster_h_index_2], "cost_result_p13", l2);
+                        outputNote(faster_h_best_array[faster_h_index_1], "cost_result_p13");
                     }else{
-                        outputParameters(best_array[design_1_index][10], "cost_result_p13", l1);
-                        outputNote(best_array[design_1_index+1][10], "cost_result_p13");
+                        outputParameters(faster_h_best_array[faster_h_index_1], "cost_result_p13", l1);
+                        outputNote(faster_h_best_array[faster_h_index_2], "cost_result_p13");
                     }
                 }else{
                     document.getElementById("cost_result_p12").innerHTML = "<b>FASTER-H: Not Enough Memory<br><br></b>";
@@ -1191,8 +1221,37 @@ function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, FASTER_b
         }
     }
     global_index=design_1_index+flag;
+    if (flag == 0){
+        global_rocks_index = rocks_index_1;
+        global_WT_index = WT_index_1;
+        global_faster_index = faster_index_1;
+        global_faster_h_index = faster_h_index_1;
+    } else {
+        global_rocks_index = rocks_index_2;
+        global_WT_index = WT_index_2;
+        global_faster_index = faster_index_2;
+        global_faster_h_index = faster_h_index_2;
+    }
+
     var chart_array=cutArray(best_array,chart_start_index,chart_end_index);
     return chart_array;
+}
+
+function getIndex(cost1, cost2, array){
+    var index1 = -1
+    var index2 = -1;
+    for (var i = 0; i < array.length; i++){
+        if (array[i].cost >= cost1){
+            index1 = i;
+            for (var j = i; j < array.length; j++){
+                if (array[j].cost >= cost2){
+                    index2 = j;
+                }
+            }
+            break;
+        }
+    }
+    return [index1, index2];
 }
 
 function drawDiagram(Variables, id){

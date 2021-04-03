@@ -1237,7 +1237,6 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
  */
 function buildContinuums(cloud_mode){
     var result_array=new Array();
-    var cosine_result_array=new Array();
     var rocks_result_array = new Array();
     var WT_result_array = new Array();
     var faster_result_array = new Array();
@@ -1291,9 +1290,8 @@ function buildContinuums(cloud_mode){
                     var info = ("<b>" + VM_libraries[cloud_provider].provider_name + " :</b><br>T=" + Variables.T + ", K=" + Variables.K + ", Z=" + Variables.Z + ", L=" + Variables.L + "<br>M_B=" + (Variables.Buffer / 1024 / 1024 / 1024).toFixed(2) + " GB, M_BF=" + (Variables.M_BF / 1024 / 1024 / 1024).toFixed(2) + " GB<br>M_FP=" + (Variables.M_FP / 1024 / 1024 / 1024).toFixed(2) + " GB, " + Variables.VM_info + "<br>Latency=" + fixTime(Variables.latency) + "<br>Cost=" + Variables.cost);
                     if (using_compression)
                         info += "<br>Compression: " + Variables.compression_name;
-                    var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables, faster_Variables, fasterh_Variables];
+                    var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint];
                     result_array.push(result);
-                    cosine_result_array.push(Variables);
                     rocks_result_array.push(rocks_Variables);
                     WT_result_array.push(WT_Variables);
                     faster_result_array.push(faster_Variables);
@@ -1313,18 +1311,19 @@ function buildContinuums(cloud_mode){
                 var info = ("<b>" + VM_libraries[cloud_provider].provider_name + " :</b><br>T=" + Variables.T + ", K=" + Variables.K + ", Z=" + Variables.Z + ", L=" + Variables.L + "<br>M_B=" + (Variables.Buffer / 1024 / 1024 / 1024).toFixed(2) + " GB, M_BF=" + (Variables.M_BF / 1024 / 1024 / 1024).toFixed(2) + " GB<br>M_FP=" + (Variables.M_FP / 1024 / 1024 / 1024).toFixed(2) + " GB, " + Variables.VM_info + "<br>Latency=" + fixTime(Variables.latency) + "<br>Cost=" + Variables.cost);
                 var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables];
                 result_array.push(result);
-                cosine_result_array.push(Variables);
                 rocks_result_array.push(rocks_Variables);
                 WT_result_array.push(WT_Variables);
             }
         }
     }
     //Sorting each array by cost
+    rocks_result_array = removeEmptyEntries(rocks_result_array);
+    WT_result_array = removeEmptyEntries(WT_result_array);
+    faster_result_array = removeEmptyEntries(faster_result_array);
+    faster_h_result_array = removeEmptyEntries(faster_h_result_array);
+
     result_array.sort(function (a,b) {
         return a[0]-b[0];
-    })
-    cosine_result_array.sort(function (a,b) {
-        return a.cost - b.cost;
     })
     rocks_result_array.sort(function (a,b) {
         return a.cost - b.cost;
@@ -1339,17 +1338,14 @@ function buildContinuums(cloud_mode){
         return a.cost - b.cost;
     })
 
-    existing_systems="null";
     result_array = correctContinuum(result_array);
-    cosine_result_array = correctContinuumForVariables(cosine_result_array);
     rocks_result_array = correctContinuumForVariables(rocks_result_array);
-    existing_systems = "WT";
     WT_result_array = correctContinuumForVariables(WT_result_array);
-    existing_systems= "null";
     faster_result_array = correctContinuumForVariables(faster_result_array);
     faster_h_result_array = correctContinuumForVariables(faster_h_result_array);
 
-    return [result_array, cosine_result_array, rocks_result_array, WT_result_array, faster_result_array, faster_h_result_array]
+    return [result_array, rocks_result_array, WT_result_array, faster_result_array, faster_h_result_array];
+
 }
 
 /**
@@ -1431,7 +1427,9 @@ function correctContinuum(result_array) {
 function correctContinuumForVariables(result_array) {
     var provider, cost, latency, bestAWS, bestGCP, bestAzure, temp;
     var result_array_with_new_points = new Array();
+
     result_array = correctContinuumForEachProviderForVariables(result_array);
+
     for (var i = 0; i < result_array.length; i++) {
         provider = result_array[i].cloud_provider;
         latency = result_array[i].latency;
@@ -1531,8 +1529,8 @@ function correctContinuumForEachProviderForVariables(array) {
             }
         }
     }
-    array = removeRedundantConfigurationsForVariables(array);
 
+    array = removeRedundantConfigurationsForVariables(array);
     return array;
 }
 
@@ -1578,9 +1576,18 @@ function correctContinuumForEachProvider(array) {
     return array;
 }
 
+function removeEmptyEntries(array){
+    return array.filter(function(ele){
+        return ele != -1;
+    });
+}
+
 function removeRedundantConfigurationsForVariables(array) {
     var cleanedArray = new Array();
     var current, last;
+    array.sort(function (a,b) {
+        return a.cost - b.cost;
+    })
     last = array[0];
     cleanedArray.push(last);
     for (var i = 1; i < array.length; i++) {
