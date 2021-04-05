@@ -112,29 +112,17 @@
             <br>
             <div class="row">
                 <div class="col-sm-12" >
-                    We present a key-value storage engine, Cosine, that guarantees an optimal balance in both cloud-cost and performance for any workload. Cosine creates a massive search space comprising of the entire data structure design and hardware-space of (LSM-tree/B-tree) key-value stores over diverse cloud pricing policies for the top three cloud providers – AWS, GCP, and Azure. This creates a trilateral tradeoff of design, cost, and performance.
+                    Welcome to this demonstration where we present a self-designing key-value storage engine, Cosine, which can always take the shape of the close to “perfect” engine architecture given an input workload, a cloud budget, a target performance, and required cloud SLAs. By identifying and formalizing the first principles of storage engine layouts and core key-value algorithms, Cosine constructs a massive design space comprising of sextillion (10^36) possible storage engine designs over a diverse space of hardware and cloud pricing policies for three cloud providers – AWS, GCP, and Azure. Cosine spans across diverse designs such as Log-Structured Merge-trees, B-trees, Log-Structured Hash-tables, in-memory accelerators for filters and indexes as well as trillions of hybrid designs that do not appear in the literature or industry but emerge as valid combinations of the above.
                 </div>
             </div>
 
             <br>
 
             <div class="row">
-
                 <div class="col-sm-12">
-                    We present distribution-aware cost models that precisely estimate the CPU and I/O costs of each possible data structure design, which in turn, helps in comparing pairs of designs. Given a budget and desired performance, Cosine prunes the massive dimensionality of the search space by using the cost models to rank designs and collapse the design dimensions into a Pareto frontier that creates a continuum of holistically optimal configurations (for a budget) of data structure design, hardware, and cloud pricing policies. We demonstrate that using the continuum, Cosine can search through the massive space of designs in seconds and it can automatically generate (through templates) storage engine instances that outperform state-of-the-art key-value storage engines (RocksDB and WiredTiger) by picking the appropriate configurations that optimizes cloud-cost and performance.
-                </div>
-
-            </div>
-
-            <br>
-
-            <div class="row">
-                <div class="col-sm-12">
-                    Finally, Cosine enables decision makers in applications to quickly answer rich what-if questions e.g., what would be the impact on cloud cost if we introduce a particular new feature, or what would be the impact on performance if we decide to cut the cloud costs by 3%, or what-if we switch to storage-engine X or cloud provider Y?
+                    At its core, Cosine includes a unified distribution-aware I/O model and a learned concurrency-aware CPU model that with high accuracy can calculate the performance and cloud cost of any possible design on any workload and virtual machines. Cosine can then search through that space in a matter of seconds to find the best design.
                 </div>
             </div>
-
-
         </div>
     </section>
 
