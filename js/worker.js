@@ -46,7 +46,7 @@ var enable_availability = false;
 var enable_durability = false;
 var enable_CLL = false;
 var enable_Rosetta = true;
-var enable_parallelism = false;
+var enable_parallelism = true;
 
 var cri_count=0;
 var cri_miss_count=0;
@@ -170,6 +170,10 @@ function SLA_factor() {
     var backup;
 }
 
+/**
+ * @returns the input given by the posted message from the worker in an object format.
+ * For the input variable check the onmessage function that is activated on the case of MessageEvent
+ */
 function parseInputVariables()
 {
     return Object.assign({},input);
@@ -260,7 +264,7 @@ function computeSLARelatedCost(cloud_provider,N,E)
  * @param combination
  * @param cloud_provider
  * @param compression_style
- * @returns {*}
+ * @returns a Variables Object, updated with optimized parameters in regards to the initial input
  */
 
 function navigateDesignSpace(combination, cloud_provider, compression_style=0) {

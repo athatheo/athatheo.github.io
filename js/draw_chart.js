@@ -1237,6 +1237,12 @@ function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, faster_b
     return chart_array;
 }
 
+/**
+ * @param cost1 the cost optimized for price
+ * @param cost2 the cost optimized for performance
+ * @param array that contains 
+ * @returns {number[]}
+ */
 function getIndex(cost1, cost2, array){
     var index1 = -1
     var index2 = -1;
