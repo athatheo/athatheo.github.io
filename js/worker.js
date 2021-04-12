@@ -730,12 +730,13 @@ function setOverallPropParallelizableCodeForExistingSystem(Variables, existing_s
             {
                 overall_prop_parallelizable_code = ((Variables.v + Variables.rmw_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_rocks) + ((Variables.insert_percentage + Variables.blind_update_percentage)*prop_of_parallelizable_code_writes_rocks);
             }
-            else if (existing_system != "FASTER" && existing_system != "FASTER_H") // Any FASTER version
+            else if (existing_system == "FASTER" && existing_system == "FASTER_H") // Any FASTER version
             {
                 overall_prop_parallelizable_code = ((Variables.v + Variables.rmw_percentage + Variables.blind_update_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_FASTER) + (Variables.insert_percentage*prop_of_parallelizable_code_writes_FASTER);
             }
             else if(existing_system=="WT") // WiredTiger
             {
+
                 overall_prop_parallelizable_code = ((Variables.v + Variables.rmw_percentage + Variables.blind_update_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_WT) + (Variables.insert_percentage*prop_of_parallelizable_code_writes_WT);
             }
     }
