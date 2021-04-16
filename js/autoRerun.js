@@ -28,6 +28,12 @@ function initializeCompressionLibraries()
     compression_libraries[2].space_reduction_ratio = 0.83;
 }
 
+/**
+ * Runs when is called from the switchStatistics and switchQuestions functions.
+ * @TODO: Check if this is actually needed. Is there any point in using this?
+ * @param e
+ * @param if_regenerate
+ */
 function re_run(e, if_regenerate=true) {
     if(timer){
         clearTimeout(timer);
@@ -247,6 +253,10 @@ function updateReadOnlyFields(){
 
 }
 
+/**
+ * This function is called when the main Design button is called, where the computations to produce the Cosine designs
+ * is called.
+ */
 function LoadCharts() {
 
     if_display=1;
@@ -393,6 +403,10 @@ function checkInput2(input){
         return true
 }
 
+/**
+ * This function fills the results in the Interactive What-If Design subcategory.
+ * It is called after everytime a Question is asked by the user.
+ */
 function switchQuestion() {
     document.getElementById("question0").style.display="none";
     document.getElementById("question1").style.display="none";
@@ -515,6 +529,10 @@ function switchQuestion() {
     }
 }
 
+/**
+ * This code presents the results in the Statistical Analysis output.
+ * @TODO: Use the other global arrays instead of the global_continuums_array
+ */
 function switchStatistics() {
     removeAllChildren(document.getElementById("statistics_result"));
     document.getElementById("statistic1").style.display="none";

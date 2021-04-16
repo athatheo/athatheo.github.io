@@ -2408,7 +2408,7 @@ function getAllVMCombinations(cloud_provider,VM_libraries)
  * It utilizes the Web Worker scheme.
  * The basic use of this is to call the buildContinuums function, where the 5 continuums (cosine, rocks,
  * WiredTiger, FASTER and FASTER_H are built.
- * @param e
+ * @param e which is an object passed that contains necesary information
  */
 onmessage = function(e) {
     input=e.data.input;
