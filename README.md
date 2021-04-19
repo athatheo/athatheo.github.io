@@ -45,7 +45,8 @@ The `js` folder contains all the business logic of this demo, meaning the JavaSc
 The four most important files in this repository are:
 - `index.html` for obvious purposes contains the basic layout, that is getting enhanced
 by functions run in the rest of the code, adding information and/or graphs
-- `autoRerun.js` initializes the whole design computation process
+- `autoRerun.js` initializes the whole design computation process and is responsible for filling in 
+  `Interactive What-If Design` and `Statistical Analysis` subcategories.
 - `draw_chart.js` is responsible for calling functions related to drawing graphs, adding information, 
 as well as connecting to worker.js where the main computations are done
 - `worker.js` is responsible for the majority of computations. The various continuums
@@ -56,13 +57,23 @@ present the results to the users.
 This file contains the necessary functions for initializing variables such as `init()` as well as drawing basic
 elements on the website. Results regarding the `Interactive What-If Design` and `Statistical Analysis`
 outputs are fed in the HTML elements by the `switchQuestions()` and `switchStatistics()` functions respectively.
+  - `switchQuestions()` is responsible for showing results in the `Interactive What-If Design` subcategory. There
+the user can change a parameter and see what would change in the design and its cost/efficiency
+  - `switchStatistics()` is responsible for showing results in the `Statistical Analysis` subcategory. The user can explore
+the various graphs that are a representation of the returned results.
 
 #### draw_chart.js
 It has a major functionality in the code. It contains the functions responsible for calling
 the continuum building functions from `worker.js` as well as various functions that are responsible
 for creating the necessary elements in the website for the user to see results. It uses the data returned
 from `worker.js` to fill the content of the HTML elements and present these results to the user. The 
-`parseInputVariables()` function is called and passed as part of the message posted in the Web Worker.
+`parseInputVariables()` function is called and its result is passed as part of the message posted in the Web Worker, so that
+functions in the `worker.js` file are aware of the user input.  
+Three functions that play a key role in creating and filling HTML elements are:
+- `drawDesigns()` finds the fitting value according to the budget (both performance- and cost-wise) and fills the relevant HTML elements
+  with information contained in the arrays that were returned from the `worker.js` computations
+- `drawDiagram()` draws the elements regarding the On Disk part
+- `drawBar()` fills the bars regarding the In-Memory sizes
 
 
 #### worker.js 

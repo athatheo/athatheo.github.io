@@ -310,7 +310,10 @@ function removeAllChildren(div){
     }
 }
 
-
+/**
+ * Reads the values from the html elements and sets them as values of a Variables object
+ * @returns {Variables}
+ */
 function parseInputVariables()
 {
     var parsedBoxes = new Variables();
@@ -1260,8 +1263,12 @@ function getIndex(cost1, cost2, array){
     return [index1, index2];
 }
 
+/**
+ * Adds elements in the diagrams of each design
+ * @param Variables
+ * @param id
+ */
 function drawDiagram(Variables, id){
-
     var result_div=document.getElementById(id)
     if(result_div==null)
         result_div=id;
