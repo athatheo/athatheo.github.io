@@ -1,6 +1,6 @@
 # Cosine
-This README is an overview containing contains two sections. The first one describes the flow of information in this demo - from user input to 
-end results. The second one gives a more in-depth description of the most important functions found here. 
+This README is an overview containing two sections. The first one describes the flow of information in this demo - from user input to 
+end results. The second one gives a more in-depth description of the most important files and functions found here. 
 
 ---
 ## Information flow
@@ -63,10 +63,10 @@ the user can change a parameter and see what would change in the design and its 
 the various graphs that are a representation of the returned results.
 
 #### draw_chart.js
-It has a major functionality in the code. It contains the functions responsible for calling
+This file contains the functions responsible for calling
 the continuum building functions from `worker.js` as well as various functions that are responsible
 for creating the necessary elements in the website for the user to see results. It uses the data returned
-from `worker.js` to fill the content of the HTML elements and present these results to the user. The 
+from `worker.js` to fill the HTML elements and present these results to the user. The 
 `parseInputVariables()` function is called and its result is passed as part of the message posted in the Web Worker, so that
 functions in the `worker.js` file are aware of the user input.  
 Three functions that play a key role in creating and filling HTML elements are:

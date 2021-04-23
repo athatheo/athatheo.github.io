@@ -1003,21 +1003,40 @@ function drawStats() {
 
 /**
  * This function loops through the cleaned continuums, finds the entry that is closer to the budget and
- * adds the responding values to html.
+ * adds the responding values to html. It also returns points to be drawn as a chart.
  * @param best_array
  * @param cost
  * @returns {any[]}
  */
 function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, faster_best_array, faster_h_best_array) {
+    /**
+     * This array contains several text entries to fill HTML elements in result presentation.
+     * @type {Array}
+     */
     var cost_result_text=new Array();
-    var chart_start_index;
-    var chart_end_index;
+    /**
+     * These two indexes indicate the start and end of the Cosine Design array entries that are relevant to drawing the chart
+     * regarding the second output subcategory.
+     */
+    var chart_start_index, chart_end_index;
     var l1,l2;
-    var design_1_index;
-    var design_2_index;
+
     var max_mem;
     var switch_option;
+    /**
+     * The xyz_index_1 variables hold the index in each of the sorted design arrays (rocks, WT, faster, faster_h)
+     * that indicates the entry before surpassing the budget indicated by the user. For example if the user selects a budget of 3000
+     * then the entry of WT_best_array[WT_index_1] will contain a design that has a maximum cost of less than 3000
+     *
+     * The xyz_index_2 is the next entry after xyz_index_2. To clarify, it's not xyz_index_1+1 since there might be multiple entries
+     * before the next cost is found.
+     */
     var rocks_index_1, rocks_index_2, WT_index_1,WT_index_2, faster_index_1, faster_index_2, faster_h_index_1, faster_h_index_2;
+    /**
+     * Same thing as above, but for Cosine
+     */
+    var design_1_index;
+    var design_2_index;
     if(cost<best_array[0][0]) {
         cost_result_text[0] = "Sorry, you have insufficient budget. The minimum budget to run the workload is $"+best_array[0][0]+".<br>";
         chart_start_index=0;
@@ -1115,6 +1134,9 @@ function drawDesigns(best_array, cost, rocks_best_array, WT_best_array, faster_b
         document.getElementById("cost_result_p2").innerHTML= cost_result_text[1];
         outputParameters(cost_result_text[2],"cost_result_p3", l1);
 
+        /**
+         * In the next section results fill the HTML elements of the first output subcategory
+         */
         if(l2!=-1) {
             if(document.getElementById('performance_conscious_checkbox').checked){
                 document.getElementById("cost_result_p4").innerHTML= "<b>Cosine configuration 2<br>saves money</b>";
