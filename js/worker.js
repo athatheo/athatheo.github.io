@@ -78,6 +78,11 @@ var prop_of_parallelizable_code_writes_WT = 0.25;
 
 var overall_prop_parallelizable_code = 1;
 
+/**
+ * Variables is an object that contains information related to each design entry. Each design is made of
+ * an array of such objects.
+ * @constructor
+ */
 function Variables()
 {
     var N;
@@ -165,6 +170,10 @@ function SLA_factor() {
     var backup;
 }
 
+/**
+ * @returns the input given by the posted message from the worker in an object format.
+ * For the input variable check the onmessage function that is activated on the case of MessageEvent
+ */
 function parseInputVariables()
 {
     return Object.assign({},input);
@@ -249,6 +258,14 @@ function computeSLARelatedCost(cloud_provider,N,E)
     return 0;
 }
 
+/**
+ * This function creates the Cosine continuum. It tries to find the best latency between LSM, BTREE and
+ * LSH configurations and returns the best one.
+ * @param combination
+ * @param cloud_provider
+ * @param compression_style
+ * @returns a Variables Object, updated with optimized parameters in regards to the initial input
+ */
 
 function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     var Variables = parseInputVariables();
@@ -702,6 +719,10 @@ function navigateDesignSpace(combination, cloud_provider, compression_style=0) {
     return Variables;
 }
 
+/**
+ * Function to compute the parallelization speed up parameter for Cosine
+ * @param Variables
+ */
 function setOverallPropParallelizableCodeForExistingSystem(Variables, existing_system) {
     if(enable_parallelism)
     {
@@ -709,12 +730,13 @@ function setOverallPropParallelizableCodeForExistingSystem(Variables, existing_s
             {
                 overall_prop_parallelizable_code = ((Variables.v + Variables.rmw_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_rocks) + ((Variables.insert_percentage + Variables.blind_update_percentage)*prop_of_parallelizable_code_writes_rocks);
             }
-            else if (existing_system != "FASTER" && existing_system != "FASTER_H") // Any FASTER version
+            else if (existing_system == "FASTER" && existing_system == "FASTER_H") // Any FASTER version
             {
                 overall_prop_parallelizable_code = ((Variables.v + Variables.rmw_percentage + Variables.blind_update_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_FASTER) + (Variables.insert_percentage*prop_of_parallelizable_code_writes_FASTER);
             }
             else if(existing_system=="WT") // WiredTiger
             {
+
                 overall_prop_parallelizable_code = ((Variables.v + Variables.rmw_percentage + Variables.blind_update_percentage + Variables.qL + Variables.qEL)*prop_of_parallelizable_code_reads_WT) + (Variables.insert_percentage*prop_of_parallelizable_code_writes_WT);
             }
     }
@@ -724,6 +746,10 @@ function setOverallPropParallelizableCodeForExistingSystem(Variables, existing_s
     }
 }
 
+/**
+ * Function to compute the parallelization speed up parameter for Cosine
+ * @param Variables
+ */
 function setOverallPropParallelizableCode(Variables){
     if (enable_parallelism){
         if(Variables.data_structure=="LSH")
@@ -739,12 +765,25 @@ function setOverallPropParallelizableCode(Variables){
     }
 }
 
+/**
+ * Function to return the latency after taking into account the parallelization factor
+ * @param Variables
+ * @returns the sped up latency after parallelization
+ */
 function speedup(Variables){
     var speedup_factor;
     speedup_factor = 1.0 / (1.0 - (overall_prop_parallelizable_code * (1.0 - (1.0/Variables.Vcpu_num))));
     return Variables.latency/speedup_factor;
 }
 
+/**
+ * A check created to ensure that the data don't fit in memory. If they do, there is no point of continuing
+ * with the continuum.
+ * @param M
+ * @param data
+ * @param E
+ * @returns {boolean}
+ */
 function fitsInMemory(M, data, E){
     if (M >= data*E){
         return true;
@@ -892,6 +931,14 @@ function getFPR( T, K, Z, L, Y, M, M_B, M_F, M_BF, data) {
     return FPR;
 }
 
+/**
+ * This creates the continuum for existing designs (rocks, WT, FASTER, FASTER_H)
+ * @param combination
+ * @param cloud_provider
+ * @param existing_system rocks, WT, FASTER, FASTER_H
+ * @param compression_style
+ * @returns Variables object
+ */
 function navigateDesignSpaceForExistingDesign(combination, cloud_provider, existing_system, compression_style=0) {
     var Variables = parseInputVariables();
     var data;
@@ -996,6 +1043,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
     if (fitsInMemory(M, data, E)){
         Variables.total_cost = 0;
         Variables.latency = 0;
+
         Variables.cost = (monthly_storage_cost + monthly_mem_cost).toFixed(3);
         Variables.cloud_provider = cloud_provider;
         Variables.memory_footprint=max_RAM_purchased*mem_sum;
@@ -1100,14 +1148,10 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         if (existing_system == "WT") {
             read_cost = read_cost * B_TREE_CACHE_DISCOUNT_FACTOR;
         }
-        if (cost>3180&&cost<3300&&(existing_systems=="WT")) {
-            console.log(read_cost);
-        }
     }else {
         update_cost = analyzeUpdateCost(B, T, K, Z, L, Y, M, M_F, M_B, M_F_HI, M_F_LO);
         read_cost = analyzeReadCost(B, E, data, T, K, Z, L, Y, M, M_B, M_F, M_BF, FPR_sum);
         long_scan_cost = analyzeLongScanCost(s, B, Z);
-
     }
 
     if(existing_system == "rocks") {
@@ -1139,7 +1183,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         total_IO = (insert_percentage * update_cost * (1+compression_libraries[compression_style].put_overhead/100) + v * read_cost * (1+compression_libraries[compression_style].get_overhead/100) + r * read_cost * (1+compression_libraries[compression_style].get_overhead/100)) / (v + insert_percentage + r);
     }
 
-    var total_latency = total_IO / IOPS / 60 / 60 / 24; // Maybe divide this by 1024*1024*1024
+    var total_latency = total_IO / IOPS / 60 / 60 / 24;
     if(L==0)
         total_latency=0;
 
@@ -1171,7 +1215,7 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         Variables.cost = (monthly_storage_cost + monthly_mem_cost).toFixed(3);
 
         if (enable_SLA) {
-            Variables.cost = (monthly_storage_cost + monthly_mem_cost + SLA_cost).toFixed(3);
+            Variables.cost = parseFloat((monthly_storage_cost + monthly_mem_cost + SLA_cost).toFixed(3));
         }
         Variables.memory_footprint = max_RAM_purchased * mem_sum;
         Variables.cloud_provider = cloud_provider;
@@ -1187,15 +1231,21 @@ function navigateDesignSpaceForExistingDesign(combination, cloud_provider, exist
         setOverallPropParallelizableCodeForExistingSystem(Variables,existing_system);
         Variables.latency  = speedup(Variables);
     }
-    if (existing_system=="WT"){
-        //console.log(cost, IOPS, total_IO,read_cost, update_cost);
-    }
+
     return Variables;
 }
 
+/**
+ * This loops over each cloud provider
+ * @param cloud_mode
+ * @returns {(Buffer|any[]|string)[]}
+ */
 function buildContinuums(cloud_mode){
     var result_array=new Array();
-
+    var rocks_result_array = new Array();
+    var WT_result_array = new Array();
+    var faster_result_array = new Array();
+    var faster_h_result_array = new Array();
     var VM_libraries=initializeVMLibraries();
     var Variables=0;
     var rocks_Variables;
@@ -1245,8 +1295,12 @@ function buildContinuums(cloud_mode){
                     var info = ("<b>" + VM_libraries[cloud_provider].provider_name + " :</b><br>T=" + Variables.T + ", K=" + Variables.K + ", Z=" + Variables.Z + ", L=" + Variables.L + "<br>M_B=" + (Variables.Buffer / 1024 / 1024 / 1024).toFixed(2) + " GB, M_BF=" + (Variables.M_BF / 1024 / 1024 / 1024).toFixed(2) + " GB<br>M_FP=" + (Variables.M_FP / 1024 / 1024 / 1024).toFixed(2) + " GB, " + Variables.VM_info + "<br>Latency=" + fixTime(Variables.latency) + "<br>Cost=" + Variables.cost);
                     if (using_compression)
                         info += "<br>Compression: " + Variables.compression_name;
-                    var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables, faster_Variables, fasterh_Variables];
+                    var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint];
                     result_array.push(result);
+                    rocks_result_array.push(rocks_Variables);
+                    WT_result_array.push(WT_Variables);
+                    faster_result_array.push(faster_Variables);
+                    faster_h_result_array.push(fasterh_Variables);
                 }
             }
         }
@@ -1262,17 +1316,48 @@ function buildContinuums(cloud_mode){
                 var info = ("<b>" + VM_libraries[cloud_provider].provider_name + " :</b><br>T=" + Variables.T + ", K=" + Variables.K + ", Z=" + Variables.Z + ", L=" + Variables.L + "<br>M_B=" + (Variables.Buffer / 1024 / 1024 / 1024).toFixed(2) + " GB, M_BF=" + (Variables.M_BF / 1024 / 1024 / 1024).toFixed(2) + " GB<br>M_FP=" + (Variables.M_FP / 1024 / 1024 / 1024).toFixed(2) + " GB, " + Variables.VM_info + "<br>Latency=" + fixTime(Variables.latency) + "<br>Cost=" + Variables.cost);
                 var result = [Variables.cost, Variables.latency, VMCombination, VM_libraries[cloud_provider].provider_name, info, Variables, Variables.memory_footprint, rocks_Variables, WT_Variables];
                 result_array.push(result);
+                rocks_result_array.push(rocks_Variables);
+                WT_result_array.push(WT_Variables);
             }
         }
     }
+    //Sorting each array by cost
+    rocks_result_array = removeEmptyEntries(rocks_result_array);
+    WT_result_array = removeEmptyEntries(WT_result_array);
+    faster_result_array = removeEmptyEntries(faster_result_array);
+    faster_h_result_array = removeEmptyEntries(faster_h_result_array);
+
     result_array.sort(function (a,b) {
         return a[0]-b[0];
     })
+    rocks_result_array.sort(function (a,b) {
+        return a.cost - b.cost;
+    })
+    WT_result_array.sort(function (a,b) {
+        return a.cost - b.cost;
+    })
+    faster_result_array.sort(function (a,b) {
+        return a.cost - b.cost;
+    })
+    faster_h_result_array.sort(function (a,b) {
+        return a.cost - b.cost;
+    })
+
     result_array = correctContinuum(result_array);
-    return result_array;
+    rocks_result_array = correctContinuumForVariables(rocks_result_array);
+    WT_result_array = correctContinuumForVariables(WT_result_array);
+    faster_result_array = correctContinuumForVariables(faster_result_array);
+    faster_h_result_array = correctContinuumForVariables(faster_h_result_array);
+
+    return [result_array, rocks_result_array, WT_result_array, faster_result_array, faster_h_result_array];
+
 }
 
-// To create the triple point per cost as the C code.
+/**
+ * To create the triple point per cost as the C code.
+ * @param result_array
+ * @returns {any[]}
+ */
 function correctContinuum(result_array) {
     var provider, cost, latency, bestAWS, bestGCP, bestAzure, temp;
     var result_array_with_new_points = new Array();
@@ -1335,8 +1420,123 @@ function correctContinuum(result_array) {
     final_array.sort(function (a,b) {
         return a[0]-b[0];
     })
-    console.log(final_array);
     return final_array;
+}
+
+/**
+ * To create the triple point per cost as the C code. The difference with correctContinuum is on
+ * the array passed.
+ * @param result_array
+ * @returns {any[]}
+ */
+function correctContinuumForVariables(result_array) {
+    var provider, cost, latency, bestAWS, bestGCP, bestAzure, temp;
+    var result_array_with_new_points = new Array();
+
+    result_array = correctContinuumForEachProviderForVariables(result_array);
+
+    for (var i = 0; i < result_array.length; i++) {
+        provider = result_array[i].cloud_provider;
+        latency = result_array[i].latency;
+        cost = result_array[i].cost;
+        if (provider == 0) {
+            if (bestAWS == null){
+                bestAWS = Object.assign({}, result_array[i]);
+            } else if (latency < bestAWS.latency) {
+                bestAWS = Object.assign({}, result_array[i]);
+            }
+            if (bestGCP!=null) {
+                temp = Object.assign({},bestGCP);
+                temp.cost = cost;
+                result_array_with_new_points.push(temp);
+            }
+            if (bestAzure!=null) {
+                temp = Object.assign({},bestAzure);
+                temp.cost = cost;
+                result_array_with_new_points.push(temp);
+            }
+        } else if (provider == 1) {
+            if (bestGCP == null){
+                bestGCP = Object.assign({}, result_array[i]);
+            } else if (latency < bestGCP.latency) {
+                bestGCP = Object.assign({}, result_array[i]);
+            }
+            if (bestAWS!=null) {
+                temp = Object.assign({},bestAWS);
+                temp.cost = cost;
+                result_array_with_new_points.push(temp);
+            }
+            if (bestAzure!=null) {
+                temp = Object.assign({},bestAzure);
+                temp.cost = cost;
+                result_array_with_new_points.push(temp);
+            }
+        } else {
+            if (bestAzure == null){
+                bestAzure = Object.assign({}, result_array[i]);
+            } else if (latency < bestAzure.latency) {
+                bestAzure = Object.assign({}, result_array[i]);
+            }
+            if (bestAWS!=null) {
+                temp = Object.assign({},bestAWS);
+                temp.cost = cost;
+                result_array_with_new_points.push(temp);
+            }
+            if (bestGCP!=null) {
+                temp = Object.assign({},bestGCP);
+                temp.cost = cost;
+                result_array_with_new_points.push(temp);
+            }
+        }
+    }
+    var final_array = result_array.concat(result_array_with_new_points);
+    final_array.sort(function (a,b) {
+        return a.cost - b.cost;
+    })
+    return final_array;
+}
+
+function correctContinuumForEachProviderForVariables(array) {
+    var bestAWS, bestGCP, bestAzure, latency, provider, cost;
+    for (var i = 0; i < array.length; i++) {
+        provider = array[i].cloud_provider;
+        latency = array[i].latency;
+        cost = array[i].cost;
+        if(provider == 0) {
+            if(bestAWS == null) {
+                bestAWS = Object.assign({},array[i]);
+            } else if(latency > bestAWS.latency) {
+                cost = array[i].cost;
+                array[i] = Object.assign({},bestAWS);
+                array[i].cost = cost;
+            } else {
+                bestAWS = Object.assign({},array[i]);
+            }
+        } else if(provider == 1) {
+            if(bestGCP == null) {
+                bestGCP = Object.assign({},array[i]);
+            } else if(latency > bestGCP.latency) {
+                cost = array[i].cost;
+                array[i] = Object.assign({},bestGCP);
+                array[i].cost = cost;
+            } else {
+                bestGCP = Object.assign({},array[i]);
+            }
+        } else {
+            if(bestAzure == null) {
+                bestAzure = Object.assign({},array[i]);
+            } else if(latency > bestAzure.latency) {
+                cost = array[i].cost;
+                array[i] = Object.assign({},bestAzure);
+                array[i].cost = cost;
+            } else {
+                bestAzure = Object.assign({},array[i]);
+            }
+        }
+    }
+
+    array = removeRedundantConfigurationsForVariables(array);
+    return array;
 }
 
 function correctContinuumForEachProvider(array) {
@@ -1379,6 +1579,30 @@ function correctContinuumForEachProvider(array) {
     }
     array = removeRedundantConfigurations(array);
     return array;
+}
+
+function removeEmptyEntries(array){
+    return array.filter(function(ele){
+        return ele != -1;
+    });
+}
+
+function removeRedundantConfigurationsForVariables(array) {
+    var cleanedArray = new Array();
+    var current, last;
+    array.sort(function (a,b) {
+        return a.cost - b.cost;
+    })
+    last = array[0];
+    cleanedArray.push(last);
+    for (var i = 1; i < array.length; i++) {
+        current = array[i];
+        if (!(current.cost == last.cost) && current.latency < last.latency) {
+            cleanedArray.push(array[i]);
+            last = current;
+        }
+    }
+    return cleanedArray;
 }
 
 function removeRedundantConfigurations(array) {
@@ -2179,6 +2403,13 @@ function getAllVMCombinations(cloud_provider,VM_libraries)
     return VMCombinations;
 }
 
+/**
+ * This is the function that connects this file to the draw_chart.js, drawContinuumsMultithread function.
+ * It utilizes the Web Worker scheme.
+ * The basic use of this is to call the buildContinuums function, where the 5 continuums (cosine, rocks,
+ * WiredTiger, FASTER and FASTER_H are built.
+ * @param e which is an object passed that contains necesary information
+ */
 onmessage = function(e) {
     input=e.data.input;
     initializeCompressionLibraries();

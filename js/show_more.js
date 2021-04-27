@@ -53,28 +53,6 @@ function getShowLinkText(currentText, id) {
           caption.innerHTML = "<strong>Figure 2.</strong> Monkey allocates relatively more main memory (i.e., lower false positive rates) to Bloom filters at shallower levels of the LSM-tree.     ";
       }
     }
-    // else if (id == "fig1")  {
-    //    caption=document.getElementById("figure1_explanation");
-       
-    //       if (currentText.toUpperCase() === "SHOW MORE...") {
-    //       newText = "Show less.";
-    //       caption.innerHTML = "<strong>Figure 1: Trade-off Curves.</strong>In Figure 1 below, we plot the trade-off curves between the worst-case costs of lookups and updates for Monkey. As a baseline, we also plot the analogous trade-off curve for state-of-the-art designs that assign the same false positive rate to filters across all levels. To focus on a particular slice of the design space, we enable parameterization of the <em>dataset </em> (number and size of data entries), the <em>environment</em> (size of persistent storage pages), and <em>main memory allocation</em> (size of the LSM-tree's buffer, and total size of all Bloom filters). We enable navigating the curves in Figure 1 to strike a particular balance between lookup cost and update cost by varying the <em> merge operation frequency, </em> which is a function of the merge policy (tiering vs. leveling) and the size ratio between adjacent levels of the LSM-tree. Figure 1 shows that Monkey dominates state-of-the-art deisgns across the whole design space. The reason is that it allocates main memory across the Bloom filters so as to minimize lookup cost, and it can trade the gain in lookup cost for better update cost by varying the merge policy and size ratio. ";
-    //    } else {
-    //       newText = "Show more...";
-    //       caption.innerHTML = "<strong>Figure 1: Trade-off Curves.</strong>In Figure 1 below, we plot the trade-off curves between the worst-case costs of lookups and updates for Monkey. As a baseline, we also plot the analogous trade-off curve for state-of-the-art designs that assign the same false positive rate to filters across all levels.";
-    //   }
-    // }
-    // else if (id == "fig2")  {
-    //    caption=document.getElementById("figure2_explanation");
-       
-    //       if (currentText.toUpperCase() === "SHOW MORE...") {
-    //       newText = "Show less.";
-    //       caption.innerHTML = "<strong>Figure 2: LSM-tree Visualization.</strong> In Figure 2 below, we give a more detailed comparison of how Monkey and state-of-the-art designs tune Bloom filters across different levels of the LSM-tree. The figure dynamically computes and illustrates the number and sizes of the different levels of the LSM-tree for any configuration specified by the user. Alongside each level, the figure shows the false positive rate that Monkey and state-of-the-art designs assign to filters for that level. In general, the figure shows that Monkey allocates relatively more main memory to filters at shallower levels of the LSM-tree. The intuition is that worst-case lookup cost is equal to the sum of false positive rates across all levels, and since shallower levels contain exponentially less entries, and it takes a lower overall amount of main memory to reduce their false positive rates thereby reducing the overall sum of false positive rates.";
-    //    } else {
-    //       newText = "Show more...";
-    //       caption.innerHTML = "<strong>Figure 2: LSM-tree Visualization.</strong> In Figure 2 below, we give a more detailed comparison of how Monkey and state-of-the-art designs tune Bloom filters across different levels of the LSM-tree.";
-    //   }
-    // }
 
     return newText;
 }

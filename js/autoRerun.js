@@ -1,5 +1,6 @@
 
 var timer=null;
+
 function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -25,10 +26,14 @@ function initializeCompressionLibraries()
     compression_libraries[2].get_overhead = 25.45;
     compression_libraries[2].put_overhead = 31.26;
     compression_libraries[2].space_reduction_ratio = 0.83;
-
-    console.log(compression_libraries);
 }
 
+/**
+ * Runs when is called from the switchStatistics and switchQuestions functions.
+ * @TODO: Check if this is actually needed. Is there any point in using this?
+ * @param e
+ * @param if_regenerate
+ */
 function re_run(e, if_regenerate=true) {
     if(timer){
         clearTimeout(timer);
@@ -71,6 +76,9 @@ function re_run(e, if_regenerate=true) {
     }
 }
 
+/**
+ * This functions initializes basic values as demo defaults.
+ */
 function init(){
 
     // Dataset and Environment
@@ -114,24 +122,7 @@ function init(){
     reverseColor();
     $("#title").css("height",($(window).height()+100)+"px");
     $("#title").css("padding-top",($(window).height()/2-300)+"px");
-    /*
-        $( window ).resize(function() {
 
-            $("#title").css("padding-top",(($(window).height()-500)/2)+"px");
-        });
-        */
-
-    /*
-        if($( window ).width()<1400)
-            $("#demo_body").css('transform','scale('+$( window ).width()/1500+') translateX('+((1400-$( window ).width())*(-1)/2)+'px)');
-
-        $( window ).resize(function() {
-            if($( window ).width()<1400)
-                $("#demo_body").css('transform','scale('+$( window ).width()/1500+') translateX('+((1400-$( window ).width())*(-1)/2)+'px)');
-            else
-                $("#demo_body").css('transform','');
-        });
-    */
     window.scrollTo(0, 1390);
 
     $(".rotate").click(function () {
@@ -200,79 +191,8 @@ function init(){
             p_get=0.5;
             p_put=0.5;
         }
-        //navigateDesignSpace();
-        //$("#loading_canvas").animate({opacity:1}, 'fast');
-        //setTimeout('$("#loading_canvas").animate({opacity:0}, \'fast\').css(\'z-index\',0)',5000);
-        //$(document.body).css({'cursor' : 'wait'});
-        //setTimeout('$(document.body).css({\'cursor\' : \'default\'})',4000);
     });
 
-    // To draw skew choices in Data uncomment the next
-    // var redraw=true;
-    // $('#myForm_3 input').on('change', function() {
-    //     if($('input[name=radio_1]:checked', '#myForm_3').val()=="skew")
-    //         $("#myForm_4").animate({height: '168px',opacity:'1',margin:'7px 6px 6px 6px',padding:'5px',borderWidth:'0px'}, "slow");
-    //     else{
-    //         $("#myForm_4").animate({height: '0px',opacity:'0',margin:'0px',padding:'0px',borderWidth:'0px'}, "slow");
-    //         workload_type = 0;
-    //         U_1 = 10000;
-    //         U_2=100000000000;
-    //         p_get = 0.7;
-    //         p_put=0.0001;
-    //         //navigateDesignSpace();
-    //         drawContinuumsMultithread();
-    //     }
-    // });
-    //
-    // $('#myForm_4 input').on('change', function() {
-    //     redraw=true;
-    //     workload_type = 1;
-    //     U_1 = 10000;
-    //     U_2 = 10000000000;
-    //     if($('input[name=radio_2]:checked', '#myForm_4').val()=="1"){
-    //         //$("#check_mark_1").animate({top: "3px", left: "3px", width: "12px",height: "12px",opacity: 1}, {speed:"slow",quene:false});
-    //         p_get=0.8;
-    //         p_put=0.0001;
-    //     }
-    //     if($('input[name=radio_2]:checked', '#myForm_4').val()=="2"){
-    //         p_get=0.0001;
-    //         p_put=0.8;
-    //     }
-    //     if($('input[name=radio_2]:checked', '#myForm_4').val()=="3"){
-    //         p_get=0.2;
-    //         p_put=0.2;
-    //     }
-    //     if($('input[name=radio_2]:checked', '#myForm_4').val()=="4"){
-    //         p_get=0.5;
-    //         p_put=0.5;
-    //     }
-    //     //navigateDesignSpace();
-    //     //$("#loading_canvas").animate({opacity:1}, 'fast');
-    //     //setTimeout('$("#loading_canvas").animate({opacity:0}, \'fast\').css(\'z-index\',0)',5000);
-    //     //$(document.body).css({'cursor' : 'wait'});
-    //     //setTimeout('$(document.body).css({\'cursor\' : \'default\'})',4000);
-    //     var check_boxes=$('span[name="skew_check_mark"]');
-    //     check_boxes.one('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend',
-    //         function(e) {
-    //             if(redraw) {
-    //                 if(if_display) {
-    //                     drawContinuumsMultithread();
-    //                     redraw = false;
-    //                 }
-    //             }
-    //         });
-    // });
-
-    /*
-        $('[name=cp_tab]').on('click',function(){
-            if(!$(this).hasClass("down")){
-                $('[name=cp_tab]').removeClass('down');
-                $(this).addClass('down');
-                //displayRocks();
-                setTimeout('drawContinuums();',400);
-            }
-        })
-    */
     $('[name=exsys_tab]').on('click',function(){
         if(!$(this).hasClass("down")){
             $('[name=exsys_tab]').removeClass('down');
@@ -324,32 +244,6 @@ function init(){
     $("#title_fonts").change(function () {
         $("#title_explanation").css("font-family",$(this).val())
     })
-    /*
-    $(window).scroll(function(){
-        $(".navbar").css({opacity:Math.max(0,(500-$(document).scrollTop()+1000))/500});
-
-        if($(".navbar").css("opacity")==0)
-            $(".navbar").css('transform','scale(0)');
-        else
-            $(".navbar").css('transform','scale(1)');
-    });*/
-
-    //navigateDesignSpace();
-    //analyzeTKZ();
-    //drawCharts();
-    //drawChart2();
-    //$("#loading_canvas").animate({opacity:1}, 'slow').css('z-index',20);
-    //setTimeout('$("#loading_canvas").animate({opacity:0}, \'slow\').css(\'z-index\',0)',5000);
-    //$(document.body).css({'cursor' : 'wait'});
-    //setTimeout('drawContinuums()',200);
-    //setTimeout('$(document.body).css({\'cursor\' : \'default\'})',4000);
-    //document.getElementById("Optimal-FPR").style.fontWeight='bold';
-    //document.getElementById("Optimal-FPR").style.fontSize='16px';
-
-    //initScenario1();
-    //initScenario2();
-    //initScenario3();
-    //initScenario4();
 }
 
 function updateReadOnlyFields(){
@@ -359,11 +253,14 @@ function updateReadOnlyFields(){
 
 }
 
+/**
+ * This function is called when the main Design button is called, where the computations to produce the Cosine designs
+ * is called.
+ */
 function LoadCharts() {
 
     if_display=1;
     drawContinuumsMultithread();
-    //setTimeout('drawContinuumsMultithread()',200);
 
 }
 
@@ -506,6 +403,10 @@ function checkInput2(input){
         return true
 }
 
+/**
+ * This function fills the results in the Interactive What-If Design subcategory.
+ * It is called after everytime a Question is asked by the user.
+ */
 function switchQuestion() {
     document.getElementById("question0").style.display="none";
     document.getElementById("question1").style.display="none";
@@ -628,6 +529,10 @@ function switchQuestion() {
     }
 }
 
+/**
+ * This code presents the results in the Statistical Analysis output.
+ * @TODO: Use the other global arrays instead of the global_continuums_array
+ */
 function switchStatistics() {
     removeAllChildren(document.getElementById("statistics_result"));
     document.getElementById("statistic1").style.display="none";
@@ -752,38 +657,7 @@ function switchStatistics() {
 
 
         }
-        /*
-        var div_temp = document.createElement("div");
-        div_temp.setAttribute("class", "myinput");
-        div_temp.setAttribute("style", "width:98%;text-align:left;margin-top:15px");
-        div_temp.innerHTML = "All Design:" ;
-        div_result.appendChild(div_temp);
 
-        query_IO=[0,0];
-        for (var i=0; i<result_array.length;i++){
-            query_IO[0]+=result_array[i][5].read_cost*result_array[i][5].v;
-            query_IO[1]+=result_array[i][5].update_cost*result_array[i][5].w;
-        }
-
-        for (var i = 0; i < 2; i++) {
-            var div_temp = document.createElement("div");
-            div_temp.setAttribute("style", "width:98%;text-align:left");
-            div_temp.setAttribute("class", "myinput")
-            var text = document.createElement("div");
-            text.setAttribute("style", "display:inline-block;width:50px;font-size:12px;text-align:left;vertical-align: top;padding: 2px;");
-            text.innerHTML = query_type[i];
-            div_temp.appendChild(text);
-            var bar = document.createElement("div");
-            bar.setAttribute("class", "color_bar");
-            bar.setAttribute("style", "width:" + 90 * query_IO[i] / (query_IO[1]+query_IO[0]) + "px;background-color:" + colors[i] + "; height:20px");
-            div_temp.appendChild(bar);
-            var percent = document.createElement("div");
-            percent.setAttribute("style", "display:inline-block;font-size:12px;vertical-align: top;padding: 2px;");
-            percent.innerHTML = ((query_IO[i] / (query_IO[1]+query_IO[0])) * 100).toFixed(1) + "%";
-            div_temp.appendChild(percent);
-            div_result.appendChild(div_temp);
-        }
-        */
 
     }
     if(document.getElementById("statistics").value=="4"){
@@ -960,18 +834,6 @@ function initializeSLACheckboxes() {
 }
 
 function prune_cloud_provider(){
-    //var cloud_provider=document.getElementById("cloud-provider").selectedIndex;
-    /*
-    if(cloud_provider==0){
-        cloud_provider_enable=[1,1,1];
-    }else if(cloud_provider==1){
-        cloud_provider_enable=[1,0,0];
-    }else if(cloud_provider==2){
-        cloud_provider_enable=[0,1,0];
-    }else if(cloud_provider==3){
-        cloud_provider_enable=[0,0,1];
-    }
-    */
     $("#AWS_checkbox").prop("checked", user_cloud_provider_enable[0]);
     $("#GCP_checkbox").prop("checked", user_cloud_provider_enable[1]);
     $("#Azure_checkbox").prop("checked", user_cloud_provider_enable[2]);
