@@ -300,7 +300,6 @@ function initChart(ContinuumArray, x, y, x_axis_title, y_axis_title, mode, cost)
         };
 
     chart.provider_num_array=provider_num_array;
-
     return chart;
 }
 
@@ -337,7 +336,6 @@ function parseInputVariables()
     parsedBoxes.qS = parseFloat(document.getElementById("qS").value);
 
     parsedBoxes.query_count = parseInt(document.getElementById("query_count").value.replace(/\D/g,''), 10);
-
 
     return parsedBoxes;
 }
@@ -453,6 +451,7 @@ function drawContinuumsNew(ContinuumArray){
     var WT_best_array = global_WT_variables_array;
     var FASTER_best_array = global_faster_variables_array;
     var FASTER_H_best_array = global_faster_h_variables_array;
+
 
     best_array=getBestDesignEverArray(global_continuums_array);
     var chart_array=drawDesigns(best_array,cost,rocks_best_array,WT_best_array,FASTER_best_array,FASTER_H_best_array);
